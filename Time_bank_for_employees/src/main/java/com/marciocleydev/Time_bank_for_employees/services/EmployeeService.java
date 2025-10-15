@@ -7,15 +7,10 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Service;
 
 @Service
-public class EmployeeService implements CommandLineRunner {
+public class EmployeeService  {
 
     @Autowired
     private EmployeeRepository repository;
 
-    @Override
-    public void run(String... args) throws Exception {
-            Employee employee = new Employee();
-            employee.setName("Marcio Cley");
-            employee.setPis("123456789");
-    }
 }
+

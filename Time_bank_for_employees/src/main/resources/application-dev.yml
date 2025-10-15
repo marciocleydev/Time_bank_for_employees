@@ -1,28 +1,28 @@
 server:
   port: 8080
 
-  spring:
-    application:
-      name: time_bank_for_employees
-    datasource:
-      url: jdbc:mysql://localhost:3306/time_bank_for_employees?useSSL=false&serverTimezone=UTC
-      username: root
-      password: 81050050
+spring:
+  application:
+    name: time_bank_for_employees
+  datasource:
+    url: jdbc:mysql://localhost:3306/time_bank_for_employees?useSSL=false&serverTimezone=UTC
+    username: root
+    password: 81050050
 
-    jpa:
+  jpa:
+    hibernate:
+     ddl-auto: create
+
+    properties:
       hibernate:
-       ddl-auto: create
+        dialect: org.hibernate.dialect.MySQL8Dialect
+    show-sql: false
+    open-in-view: false
 
-      properties:
-        hibernate:
-          dialect: org.hibernate.dialect.MySQL8Dialect
-      show-sql: false
-      open-in-view: false
+logging:
+   level:
+    root: info #projeto completo.
 
-  logging:
-     level:
-      root: INFO #projeto completo.
-
-      # Reduce ruído de outros módulos
-      org.hibernate: ERROR
-      org.springframework.transaction: ERROR
+    # Reduce ruído de outros módulos
+    org.hibernate: ERROR
+    org.springframework.transaction: ERROR

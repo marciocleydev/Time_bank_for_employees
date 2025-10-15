@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.util.List;
 import java.util.Objects;
 
 @Entity
@@ -18,6 +19,10 @@ public class Employee implements Serializable {
     private String name;
     @Column(unique = true, nullable = false)
     private String pis;
+    @OneToOne(mappedBy = "employee")
+    private TimeBank timeBank;
+    @OneToMany(mappedBy = "employee")
+    private List<TimeSheet> timeSheetList;
 
     public Employee() {
     }
@@ -50,15 +55,35 @@ public class Employee implements Serializable {
         this.pis = pis;
     }
 
+    public TimeBank getTimeBank() {
+        return timeBank;
+    }
+
+    public void setTimeBank(TimeBank timeBank) {
+        this.timeBank = timeBank;
+    }
+    public List<TimeSheet> getTimeSheetList() {
+        return timeSheetList;
+    }
+    public void setTimeSheetList(List<TimeSheet> timeSheetList) {
+        this.timeSheetList = timeSheetList;
+    }
+    public void addTimeSheet(TimeSheet timeSheet) {
+        this.timeSheetList.add(timeSheet);
+    }
+    public void removeTimeSheet(TimeSheet timeSheet) {
+        this.timeSheetList.remove(timeSheet);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         Employee employee = (Employee) o;
-        return Objects.equals(id, employee.id) && Objects.equals(name, employee.name) && Objects.equals(pis, employee.pis);
+        return Objects.equals(id, employee.id) && Objects.equals(name, employee.name) && Objects.equals(pis, employee.pis) && Objects.equals(timeBank, employee.timeBank);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, pis);
+        return Objects.hash(id, name, pis, timeBank);
     }
 }

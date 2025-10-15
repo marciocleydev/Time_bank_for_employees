@@ -11,9 +11,8 @@ import org.springframework.stereotype.Component;
 @SpringBootApplication
 public class StartUp {
 
-	public static void main(String[] args) {
-		SpringApplication.run(StartUp.class, args);
-
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(StartUp.class, args);
+    }
 
 }

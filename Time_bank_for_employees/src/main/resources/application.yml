@@ -2,4 +2,4 @@ spring:
   profiles:
     active: dev
   jpa:
-    open-in-view: true #Desativa o recurso do JPA que mantém a sessão aberta até a renderização da view, evitando acesso a dados lazy
+    open-in-view: true # Deixe true para evitar LazyInitializationException em desenvolvimento. Mude para false em produÃ§Ã£o.
