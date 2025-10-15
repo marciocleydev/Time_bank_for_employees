@@ -33,11 +33,14 @@ public class EmployeeService  {
 
     public Employee create(Employee employee) {
         logger.info("Creating employee! ID: {}", employee.getId());
+        if (employee.getId() != null) {
+            throw new DataIntegrityException("Employee ID must be null to create a new employee");
+        }
         return repository.save(employee);
     }
-    public Employee update(Employee employee) {
+    public Employee update(Employee employee, Long id) {
         logger.info("Updating employee! ID: {}", employee.getId());
-        Employee persistedEmployee = findById(employee.getId());
+        Employee persistedEmployee = findById(id);
         persistedEmployee.setName(employee.getName());
         persistedEmployee.setPis(employee.getPis());
         return repository.save(persistedEmployee);
@@ -45,11 +48,9 @@ public class EmployeeService  {
     public void deleteById(Long id) {
         logger.info(" Trying to delete employee! ID: {}", id);
         try {
+            repository.findById(id).orElseThrow(()->new ResourceNotFoundException("Employee not found", id));
             repository.deleteById(id);
             logger.info("Employee deleted! ID: {}", id);
-        }
-        catch (EmptyResultDataAccessException e) {
-            throw new ResourceNotFoundException("Employee not found", id);
         }
         catch (DataIntegrityViolationException e) {
             throw new DataIntegrityException(e.getMessage());

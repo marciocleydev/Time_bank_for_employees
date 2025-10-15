@@ -1,5 +1,6 @@
 package com.marciocleydev.Time_bank_for_employees.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.io.Serial;
@@ -17,6 +18,7 @@ public class TimeBank implements Serializable {
     private Long id;
     private Double totalValue;
     private Instant lastUpdate;
+    @JsonIgnore
     @OneToOne
     @JoinColumn(name = "employee_id")
     private Employee employee;

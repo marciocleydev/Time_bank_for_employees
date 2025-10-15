@@ -24,10 +24,8 @@ public class Employee implements Serializable {
     @Column(unique = true, nullable = false)
     private String pis;
 
-    @JsonIgnore
     @OneToOne(mappedBy = "employee")
     private TimeBank timeBank;
-
     @JsonIgnore
     @OneToMany(mappedBy = "employee")
     private List<TimeSheet> timeSheetList = new ArrayList<>();
