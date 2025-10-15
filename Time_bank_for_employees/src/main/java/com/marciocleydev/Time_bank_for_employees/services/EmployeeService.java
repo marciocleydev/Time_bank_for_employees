@@ -12,5 +12,8 @@ public class EmployeeService  {
     @Autowired
     private EmployeeRepository repository;
 
+    public Employee findById(Long id) {
+        return repository.findById(id).orElseThrow(()->new RuntimeException("Employee not found"));
+    }
 }
 

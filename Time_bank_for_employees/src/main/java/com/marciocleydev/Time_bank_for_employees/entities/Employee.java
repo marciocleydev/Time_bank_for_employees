@@ -1,9 +1,11 @@
 package com.marciocleydev.Time_bank_for_employees.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -16,13 +18,19 @@ public class Employee implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     private String name;
+
     @Column(unique = true, nullable = false)
     private String pis;
+
+    @JsonIgnore
     @OneToOne(mappedBy = "employee")
     private TimeBank timeBank;
+
+    @JsonIgnore
     @OneToMany(mappedBy = "employee")
-    private List<TimeSheet> timeSheetList;
+    private List<TimeSheet> timeSheetList = new ArrayList<>();
 
     public Employee() {
     }
