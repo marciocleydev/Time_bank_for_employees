@@ -1,6 +1,7 @@
 package com.marciocleydev.Time_bank_for_employees.services;
 
 import com.marciocleydev.Time_bank_for_employees.DTO.EmployeeDTO;
+import com.marciocleydev.Time_bank_for_employees.controllers.EmployeeController;
 import com.marciocleydev.Time_bank_for_employees.entities.Employee;
 import com.marciocleydev.Time_bank_for_employees.exceptions.DataIntegrityException;
 import com.marciocleydev.Time_bank_for_employees.exceptions.ResourceNotFoundException;
@@ -14,6 +15,9 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
+
 @Service
 public class EmployeeService  {
 
@@ -26,13 +30,19 @@ public class EmployeeService  {
 
     public List<EmployeeDTO> findAll() {
         logger.info("Finding all employees");
-        return mapper.toDTOList(repository.findAll());
+
+        var employeeDTOList = mapper.toDTOList(repository.findAll());
+        employeeDTOList.forEach(this::addHateoasLinks);
+        return employeeDTOList;
     }
 
     public EmployeeDTO findById(Long id) {
         logger.info("Finding employee by id {}", id);
         Employee employee =  repository.findById(id).orElseThrow(()->new ResourceNotFoundException("Employee not found! ID: ", id));
-        return mapper.toDTO(employee);
+
+        var employeeDTO = mapper.toDTO(employee);
+        addHateoasLinks(employeeDTO);
+        return employeeDTO;
     }
 
     public EmployeeDTO create(EmployeeDTO employee) {
@@ -42,7 +52,10 @@ public class EmployeeService  {
         }
         var persistedEmployee= repository.save(mapper.toEntity(employee));
         logger.info("Employee created! ID: {}", persistedEmployee.getId());
-        return mapper.toDTO(persistedEmployee);
+
+        var employeeDTO = mapper.toDTO(persistedEmployee);
+        addHateoasLinks(employeeDTO);
+        return employeeDTO;
     }
 
     public EmployeeDTO update(EmployeeDTO newEmployee, Long id) {
@@ -50,7 +63,12 @@ public class EmployeeService  {
 
         Employee oldEmployee = repository.findById(id).orElseThrow(()->new ResourceNotFoundException("Employee not found! ID: ", id));
         updateFactory(newEmployee, oldEmployee);
-        return mapper.toDTO(repository.save(oldEmployee));
+        repository.save(oldEmployee);
+        logger.info("Employee updated! ID: {}", id);
+
+        var employeeDTO = mapper.toDTO(oldEmployee);
+        addHateoasLinks(employeeDTO);
+        return employeeDTO;
     }
 
     private void updateFactory(EmployeeDTO newEmployee, Employee oldEmployee){
@@ -68,6 +86,14 @@ public class EmployeeService  {
         catch (DataIntegrityViolationException e) {
             throw new DataIntegrityException(e.getMessage());
         }
+    }
+
+    private void addHateoasLinks(EmployeeDTO dto) {
+        dto.add(linkTo(methodOn(EmployeeController.class).findById(dto.getId())).withSelfRel().withType("GET"));
+        dto.add(linkTo(methodOn(EmployeeController.class).findAll()).withRel("findAll").withType("GET"));
+        dto.add(linkTo(methodOn(EmployeeController.class).create(dto)).withRel("create").withType("POST"));
+        dto.add(linkTo(methodOn(EmployeeController.class).update(dto.getId(),dto)).withRel("update").withType("PUT"));
+        dto.add(linkTo(methodOn(EmployeeController.class).deleteById(dto.getId())).withRel("delete").withType("DELETE"));
     }
 }
 

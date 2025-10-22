@@ -1,13 +1,14 @@
 package com.marciocleydev.Time_bank_for_employees.DTO;
 
 import jakarta.persistence.Column;
+import org.springframework.hateoas.RepresentationModel;
 
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.Objects;
 
 
-public class EmployeeDTO implements Serializable {
+public class EmployeeDTO extends RepresentationModel<EmployeeDTO> implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
 

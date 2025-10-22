@@ -1,0 +1,5 @@
+spring:
+  profiles:
+    active: test
+  jpa:
+    open-in-view: true # Deixe true para evitar LazyInitializationException em desenvolvimento. Mude para false em produção.

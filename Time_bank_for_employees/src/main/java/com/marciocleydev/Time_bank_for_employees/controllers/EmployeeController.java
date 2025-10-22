@@ -18,19 +18,19 @@ public class EmployeeController {
     private EmployeeService service;
 
     @GetMapping
-    private ResponseEntity<List<EmployeeDTO>> findAll() {
+    public ResponseEntity<List<EmployeeDTO>> findAll() {
         List<EmployeeDTO> employees = service.findAll();
         return ResponseEntity.ok().body(employees);
     }
 
     @GetMapping(value = "/{id}")
-    private ResponseEntity<EmployeeDTO> findById(@PathVariable Long id) {
+    public ResponseEntity<EmployeeDTO> findById(@PathVariable Long id) {
         EmployeeDTO employee = service.findById(id);
         return ResponseEntity.ok().body(employee);
     }
 
     @PostMapping()
-    private ResponseEntity<EmployeeDTO> create(@RequestBody EmployeeDTO employee) {
+    public ResponseEntity<EmployeeDTO> create(@RequestBody EmployeeDTO employee) {
         EmployeeDTO persistedEmployee = service.create(employee);
         //Cria uma URI (endereço) para o novo recurso, Usa a URL da requisição atual e adiciona o id do novo funcionário no final
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(persistedEmployee.getId()).toUri();
@@ -38,13 +38,13 @@ public class EmployeeController {
     }
 
     @PutMapping(value = "/{id}")
-    private ResponseEntity<EmployeeDTO> update(@PathVariable Long id, @RequestBody EmployeeDTO employee) {
+    public ResponseEntity<EmployeeDTO> update(@PathVariable Long id, @RequestBody EmployeeDTO employee) {
         EmployeeDTO updatedEmployee = service.update(employee, id);
         return ResponseEntity.ok().body(updatedEmployee);
     }
 
     @DeleteMapping(value = "/{id}")
-    private ResponseEntity<Void> deleteById(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteById(@PathVariable Long id) {
         service.deleteById(id);
         return ResponseEntity.noContent().build();
     }
