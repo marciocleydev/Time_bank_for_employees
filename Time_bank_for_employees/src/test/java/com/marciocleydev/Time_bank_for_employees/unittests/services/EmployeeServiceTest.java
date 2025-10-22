@@ -10,18 +10,19 @@ import com.marciocleydev.Time_bank_for_employees.services.EmployeeService;
 import com.marciocleydev.Time_bank_for_employees.unittests.mocks.MockEmployee;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataIntegrityViolationException;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
-
 
 @ExtendWith(MockitoExtension.class)
 class EmployeeServiceTest {
@@ -57,6 +58,15 @@ class EmployeeServiceTest {
         verify(mapper).toDTO(employee);//Confirma que o method foi chamado (por padrão, exatamente 1 vez).
         verifyNoMoreInteractions(repository, mapper);//Garante que, além das chamadas verificadas acima, não houve nenhuma outra interação com esses mocks — se houver, o teste falha.
         }
+
+    @Test
+    void findById_notFound() {
+        when(repository.findById(999L)).thenReturn(Optional.empty());
+        assertThrows(ResourceNotFoundException.class, () -> service.findById(999L));
+
+        verify(repository).findById(999L);
+        verifyNoMoreInteractions(repository);
+    }
 
     @Test
     void create() {
@@ -105,6 +115,16 @@ class EmployeeServiceTest {
     }
 
     @Test
+    void update_notFound() {
+        EmployeeDTO dto = input.mockDTO(999);
+        when(repository.findById(dto.getId())).thenReturn(Optional.empty());
+        assertThrows(ResourceNotFoundException.class, () -> service.update(dto, dto.getId()));
+
+        verify(repository).findById(dto.getId());
+        verifyNoMoreInteractions(repository);
+    }
+
+    @Test
     void deleteById_success() {
         Employee employee = input.mockEntity(1);
 
@@ -148,35 +168,48 @@ class EmployeeServiceTest {
 
         var result = service.findAll();
         assertNotNull(result);
-        assertEquals(20, result.size());
+        assertEquals(20, result.size(),"Expected 20 employees in the list");
 
         var employeeDTO1 = result.getFirst();
-
-        assertNotNull(employeeDTO1);
-        assertEquals(employeeDTOList.getFirst(), employeeDTO1);
-        assertNotNull(employeeDTO1.getLinks());
-        assertNotNull(employeeDTO1.getId(), "EmployeeDTO should have an ID");
-        hasLinkHateoas(employeeDTO1);
+        assertsEmployee(employeeDTO1, employeeDTOList.getFirst());
 
         var employeeDTO10 = result.get(9);
-
-        assertNotNull(employeeDTO10);
-        assertEquals(employeeDTOList.get(9), employeeDTO10);
-        assertNotNull(employeeDTO10.getLinks());
-        assertNotNull(employeeDTO10.getId(), "EmployeeDTO should have an ID");
-        hasLinkHateoas(employeeDTO10);
+        assertsEmployee(employeeDTO10, employeeDTOList.get(9));
 
         var employeeDTO20 = result.getLast();
-
-        assertNotNull(employeeDTO20);
-        assertEquals(employeeDTOList.getLast(), employeeDTO20);
-        assertNotNull(employeeDTO20.getLinks());
-        assertNotNull(employeeDTO20.getId(), "EmployeeDTO should have an ID");
-        hasLinkHateoas(employeeDTO20);
+        assertsEmployee(employeeDTO20, employeeDTOList.getLast());
 
         verify(repository).findAll();
         verify(mapper).toDTOList(employeeList);
         verifyNoMoreInteractions(repository, mapper);
+    }
+
+    @Test
+    void findAll_emptyList() {
+        when(repository.findAll()).thenReturn(Collections.emptyList());
+        when(mapper.toDTOList(Collections.emptyList())).thenReturn(Collections.emptyList());
+
+        var result = service.findAll();
+
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+
+        verify(repository).findAll();
+        verify(mapper).toDTOList(Collections.emptyList());
+        verifyNoMoreInteractions(repository, mapper);
+    }
+
+    private void assertsEmployee(EmployeeDTO dto,EmployeeDTO employeeDTOFromList ){
+        //                               * assertAll *
+        //Mantém legibilidade e organização do méthod auxiliar / Evita que o teste pare na primeira falha, dando uma visão completa do problema.
+        //Muito usado em empresas que buscam testes robustos e confiáveis.
+        assertAll("EmployeeDTO checks",
+                () -> assertNotNull(dto, "EmployeeDTO should not be null"),
+                () -> assertEquals(employeeDTOFromList, dto, "EmployeeDTO content mismatch"),
+                () -> assertNotNull(dto.getId(), "EmployeeDTO should have an ID"),
+                () -> assertNotNull(dto.getLinks(), "EmployeeDTO should have links"),
+                () -> hasLinkHateoas(dto)
+        );
     }
 
     private void hasLinkHateoas(EmployeeDTO dto){
