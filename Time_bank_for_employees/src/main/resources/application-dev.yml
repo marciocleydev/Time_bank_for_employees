@@ -1,6 +1,7 @@
 server:
   port: 8080
-
+cors:
+  originPattern: http://localhost:8080,http://localhost:3000,https://www.linkedin.com/in/marciocleydev
 spring:
   application:
     name: time_bank_for_employees
@@ -27,3 +28,8 @@ logging:
     # Reduce ruído de outros módulos
     org.hibernate: ERROR
     org.springframework.transaction: ERROR
+
+springdoc:
+  pathsToMatch: /**  # para documentar todos os endpoints da API
+  swagger-ui:
+    use-root-path: true  # para que o swagger seja acessado em /swagger-ui.html

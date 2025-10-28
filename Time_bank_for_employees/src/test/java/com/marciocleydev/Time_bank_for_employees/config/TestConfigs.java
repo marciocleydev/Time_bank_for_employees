@@ -1,0 +1,11 @@
+package com.marciocleydev.Time_bank_for_employees.config;
+
+public interface TestConfigs {
+    int SERVER_PORT = 8888;
+    String HEADER_PARAM_AUTHORIZATION = "Authorization";
+    String HEADER_PARAM_ORIGIN = "Origin";
+
+    String ORIGIN_MARCIOCLEY = "https://www.linkedin.com/in/marciocleydev";
+    String ORIGIN_GOOGLE = "https://www.google.com.br";
+}
+

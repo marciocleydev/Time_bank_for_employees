@@ -1,14 +1,12 @@
 server:
   port: 8888
-
+cors:
+  originPattern: http://localhost:8080,http://localhost:3000,https://www.linkedin.com/in/marciocleydev
 spring:
   application:
     name: time_bank_for_employees
   datasource:
-    url: jdbc:mysql://localhost:3306/time_bank_for_employees?useSSL=false&serverTimezone=UTC
-    username: root
-    password: 81050050
-
+    driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
      ddl-auto: none
@@ -26,3 +24,8 @@ logging:
     # Reduce ruído de outros módulos
     org.hibernate: ERROR
     org.springframework.transaction: ERROR
+
+springdoc:
+  pathsToMatch: /**  # para documentar todos os endpoints da API
+  swagger-ui:
+    use-root-path: true  # para que o swagger seja acessado em /swagger-ui.html
