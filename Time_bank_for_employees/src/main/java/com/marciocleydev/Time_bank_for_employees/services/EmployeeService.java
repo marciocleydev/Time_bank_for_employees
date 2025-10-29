@@ -11,9 +11,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.Link;
+import org.springframework.hateoas.PagedModel;
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
@@ -26,14 +30,32 @@ public class EmployeeService  {
     @Autowired
     private EmployeeMapper mapper;
 
+    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
+    @Autowired
+    PagedResourcesAssembler<EmployeeDTO> assembler;
+
     private static final Logger logger = LoggerFactory.getLogger(EmployeeService.class);
 
-    public List<EmployeeDTO> findAll() {
+    public PagedModel<EntityModel<EmployeeDTO>> findAll(Pageable pageable) {
         logger.info("Finding all employees");
 
-        var employeeDTOList = mapper.toDTOList(repository.findAll());
-        employeeDTOList.forEach(this::addHateoasLinks);
-        return employeeDTOList;
+        var employees = repository.findAll(pageable);
+
+        var employeesWithLinks = employees.map(employee -> {
+            var employeeDTO = mapper.toDTO(employee);
+            addHateoasLinks(employeeDTO);
+            return employeeDTO;
+        });
+
+        Link findAllLink = WebMvcLinkBuilder.linkTo(
+                WebMvcLinkBuilder.methodOn(EmployeeController.class)
+                        .findAll(
+                                pageable.getPageNumber(),
+                                pageable.getPageSize(),
+                                pageable.getSort().toString()
+                        )
+        ).withSelfRel();
+        return assembler.toModel(employeesWithLinks, findAllLink);
     }
 
     public EmployeeDTO findById(Long id) {
@@ -89,8 +111,8 @@ public class EmployeeService  {
     }
 
     private void addHateoasLinks(EmployeeDTO dto) {
+        dto.add(linkTo(methodOn(EmployeeController.class).findAll(1, 12, "asc")).withRel("findAll").withType("GET"));
         dto.add(linkTo(methodOn(EmployeeController.class).findById(dto.getId())).withSelfRel().withType("GET"));
-        dto.add(linkTo(methodOn(EmployeeController.class).findAll()).withRel("findAll").withType("GET"));
         dto.add(linkTo(methodOn(EmployeeController.class).create(dto)).withRel("create").withType("POST"));
         dto.add(linkTo(methodOn(EmployeeController.class).update(dto.getId(),dto)).withRel("update").withType("PUT"));
         dto.add(linkTo(methodOn(EmployeeController.class).deleteById(dto.getId())).withRel("delete").withType("DELETE"));

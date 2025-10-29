@@ -4,6 +4,12 @@ import com.marciocleydev.Time_bank_for_employees.DTO.EmployeeDTO;
 import com.marciocleydev.Time_bank_for_employees.controllers.docs.EmployeeControllerDocs;
 import com.marciocleydev.Time_bank_for_employees.services.EmployeeService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -21,8 +27,15 @@ public class EmployeeController implements EmployeeControllerDocs {
 
     @GetMapping
     @Override
-    public ResponseEntity<List<EmployeeDTO>> findAll() {
-        List<EmployeeDTO> employees = service.findAll();
+    public ResponseEntity<PagedModel<EntityModel<EmployeeDTO>>> findAll(
+            @RequestParam(value = "page") Integer page,
+            @RequestParam(value = "size") Integer size,
+            @RequestParam(value = "direction") String direction
+    ) {
+        var sortDirection = "desc".equalsIgnoreCase(direction) ? Sort.Direction.DESC : Sort.Direction.ASC;
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, "name"));
+        var  employees = service.findAll(pageable);
         return ResponseEntity.ok().body(employees);
     }
 
