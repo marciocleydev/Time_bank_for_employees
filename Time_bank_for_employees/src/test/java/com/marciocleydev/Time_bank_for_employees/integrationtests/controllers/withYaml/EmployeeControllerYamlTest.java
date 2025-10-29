@@ -1,34 +1,37 @@
-package com.marciocleydev.Time_bank_for_employees.integrationtests.controllers.withJson;
+package com.marciocleydev.Time_bank_for_employees.integrationtests.controllers.withYaml;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marciocleydev.Time_bank_for_employees.config.TestConfigs;
+import com.marciocleydev.Time_bank_for_employees.integrationtests.controllers.withYaml.mapper.YAMLMapper;
 import com.marciocleydev.Time_bank_for_employees.integrationtests.dto.EmployeeDTO;
 import com.marciocleydev.Time_bank_for_employees.integrationtests.testcontainers.AbstractIntegrationTest;
 import io.restassured.builder.RequestSpecBuilder;
+import io.restassured.config.EncoderConfig;
+import io.restassured.config.RestAssuredConfig;
 import io.restassured.filter.log.LogDetail;
 import io.restassured.filter.log.RequestLoggingFilter;
 import io.restassured.filter.log.ResponseLoggingFilter;
+import io.restassured.http.ContentType;
 import io.restassured.specification.RequestSpecification;
 import org.junit.jupiter.api.*;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+
+import java.util.Arrays;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-class EmployeeControllerJsonTest extends AbstractIntegrationTest {
+class EmployeeControllerYamlTest extends AbstractIntegrationTest {
     private static RequestSpecification specification;
-    private static ObjectMapper objectMapper;
+    private static YAMLMapper yamlMapper;
     private static EmployeeDTO employeeDTO;
 
     @BeforeAll
     static void setUp() {
-        objectMapper = new ObjectMapper();
-        objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+        yamlMapper = new YAMLMapper();
 
         employeeDTO = new EmployeeDTO();
     }
@@ -39,18 +42,26 @@ class EmployeeControllerJsonTest extends AbstractIntegrationTest {
         mockEmployee(1);
         setSpecification();
 
-        var content = given(specification)
-                .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .body(employeeDTO)
+        var content = given().config(
+                RestAssuredConfig.config()
+                        .encoderConfig(
+                                EncoderConfig.encoderConfig()
+                                        .encodeContentTypeAs(MediaType.APPLICATION_YAML_VALUE, ContentType.TEXT)
+                        )
+                )
+                .spec(specification)
+                .contentType(MediaType.APPLICATION_YAML_VALUE)
+                .accept(MediaType.APPLICATION_YAML_VALUE)
+                .body(employeeDTO, yamlMapper)
                 .when()
                 .post()
                 .then()
                 .statusCode(201)
                 .extract()
                 .body()
-                .asString();
+                .as(EmployeeDTO.class, yamlMapper);
 
-        employeeDTO = objectMapper.readValue(content, EmployeeDTO.class);
+        employeeDTO = content;
         verifyAssertNotNull();
         verifyAssertEquals(1);
     }
@@ -58,8 +69,15 @@ class EmployeeControllerJsonTest extends AbstractIntegrationTest {
     @Order(2)
     @Test
     void findById() throws JsonProcessingException {
-        var content = given(specification)
-                .contentType(MediaType.APPLICATION_JSON_VALUE)
+        var content = given().config(
+                        RestAssuredConfig.config()
+                                .encoderConfig(
+                                        EncoderConfig.encoderConfig()
+                                                .encodeContentTypeAs(MediaType.APPLICATION_YAML_VALUE, ContentType.TEXT)
+                                )
+                )
+                .spec(specification)
+                .accept(MediaType.APPLICATION_YAML_VALUE)
                 .pathParam("id", employeeDTO.getId())
                 .when()
                 .get("/{id}")
@@ -67,9 +85,9 @@ class EmployeeControllerJsonTest extends AbstractIntegrationTest {
                 .statusCode(200)
                 .extract()
                 .body()
-                .asString();
+                .as(EmployeeDTO.class, yamlMapper);
 
-        employeeDTO = objectMapper.readValue(content, EmployeeDTO.class);
+        employeeDTO = content;
         verifyAssertNotNull();
         verifyAssertEquals(1);
     }
@@ -79,19 +97,27 @@ class EmployeeControllerJsonTest extends AbstractIntegrationTest {
     void update() throws JsonProcessingException {
         mockEmployee(2);
 
-        var content = given(specification)
-                .contentType(MediaType.APPLICATION_JSON_VALUE)
+        var content = given().config(
+                        RestAssuredConfig.config()
+                                .encoderConfig(
+                                        EncoderConfig.encoderConfig()
+                                                .encodeContentTypeAs(MediaType.APPLICATION_YAML_VALUE, ContentType.TEXT)
+                                )
+                )
+                .spec(specification)
+                .contentType(MediaType.APPLICATION_YAML_VALUE)
+                .accept(MediaType.APPLICATION_YAML_VALUE)
                 .pathParam("id", employeeDTO.getId())
-                .body(employeeDTO)
+                .body(employeeDTO, yamlMapper)
                 .when()
                 .put("/{id}")
                 .then()
                 .statusCode(200)
                 .extract()
                 .body()
-                .asString();
+                .as(EmployeeDTO.class, yamlMapper);
 
-        employeeDTO = objectMapper.readValue(content, EmployeeDTO.class);
+        employeeDTO = content;
         verifyAssertNotNull();
         verifyAssertEquals(2);
     }
@@ -100,7 +126,7 @@ class EmployeeControllerJsonTest extends AbstractIntegrationTest {
     @Test
     void deleteById() {
         var content = given(specification)
-                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .contentType(MediaType.APPLICATION_YAML_VALUE)
                 .pathParam("id", employeeDTO.getId())
                 .when()
                 .delete("/{id}")
@@ -116,27 +142,34 @@ class EmployeeControllerJsonTest extends AbstractIntegrationTest {
     @Order(5)
     @Test
     void findAll() throws JsonProcessingException {
-        var content = given(specification)
-                .contentType(MediaType.APPLICATION_JSON_VALUE)
+        var content = given().config(
+                        RestAssuredConfig.config()
+                                .encoderConfig(
+                                        EncoderConfig.encoderConfig()
+                                                .encodeContentTypeAs(MediaType.APPLICATION_YAML_VALUE, ContentType.TEXT)
+                                )
+                )
+                .spec(specification)
+                .accept(MediaType.APPLICATION_YAML_VALUE)
                 .when()
                 .get()
                 .then()
                 .statusCode(200)
                 .extract()
                 .body()
-                .asString();
+                .as(EmployeeDTO[].class, yamlMapper);
 
-            var employees = objectMapper.readValue(content, EmployeeDTO[].class);
-            employeeDTO = employees[0];
+            var employees = Arrays.asList(content);
+            employeeDTO = employees.getFirst();
             verifyAssertNotNull();
             assertAll(
                     () -> assertEquals(2, employeeDTO.getId()),
                     () ->assertEquals("Caralie", employeeDTO.getName()),
                     () -> assertEquals("767-83-0693", employeeDTO.getPis()),
-                    () -> assertEquals(100, employees.length)
+                    () -> assertEquals(100, employees.size())
             );
 
-        employeeDTO = employees[47];
+        employeeDTO = employees.get(47);
         verifyAssertNotNull();
         assertAll(
                 () -> assertEquals(49, employeeDTO.getId()),

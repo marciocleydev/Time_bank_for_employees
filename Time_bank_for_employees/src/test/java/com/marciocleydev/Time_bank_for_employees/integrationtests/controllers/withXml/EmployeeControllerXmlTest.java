@@ -1,10 +1,10 @@
-package com.marciocleydev.Time_bank_for_employees.integrationtests.controllers.cors;
+package com.marciocleydev.Time_bank_for_employees.integrationtests.controllers.withXml;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.marciocleydev.Time_bank_for_employees.DTO.EmployeeDTO;
+import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.marciocleydev.Time_bank_for_employees.config.TestConfigs;
+import com.marciocleydev.Time_bank_for_employees.integrationtests.dto.EmployeeDTO;
 import com.marciocleydev.Time_bank_for_employees.integrationtests.testcontainers.AbstractIntegrationTest;
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.filter.log.LogDetail;
@@ -12,8 +12,6 @@ import io.restassured.filter.log.RequestLoggingFilter;
 import io.restassured.filter.log.ResponseLoggingFilter;
 import io.restassured.specification.RequestSpecification;
 import org.junit.jupiter.api.*;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 
@@ -22,162 +20,115 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-class EmployeeControllerTest extends AbstractIntegrationTest {
+class EmployeeControllerXmlTest extends AbstractIntegrationTest {
     private static RequestSpecification specification;
-    private static ObjectMapper objectMapper;
+    private static XmlMapper xmlMapper;
     private static EmployeeDTO employeeDTO;
 
     @BeforeAll
     static void setUp() {
-        objectMapper = new ObjectMapper();
-        objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+        xmlMapper = new XmlMapper();
+        xmlMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
-         employeeDTO = new EmployeeDTO();
+        employeeDTO = new EmployeeDTO();
     }
 
     @Order(1)
-    @ParameterizedTest
-    @CsvSource({
-            TestConfigs.ORIGIN_MARCIOCLEY + ", 201",
-            TestConfigs.ORIGIN_GOOGLE + ", 403"
-    })
-    void create(String origin, int expectedStatus) throws JsonProcessingException {
+    @Test
+    void create() throws JsonProcessingException {
         mockEmployee(1);
-        setSpecification(origin);
+        setSpecification();
 
         var content = given(specification)
-                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .contentType(MediaType.APPLICATION_XML_VALUE)
+                .accept(MediaType.APPLICATION_XML_VALUE)
                 .body(employeeDTO)
                 .when()
                 .post()
                 .then()
-                .statusCode(expectedStatus)
+                .statusCode(201)
                 .extract()
                 .body()
                 .asString();
 
-        if(expectedStatus == 201){
-            employeeDTO = objectMapper.readValue(content, EmployeeDTO.class);
-            verifyAssertNotNull();
-            verifyAssertEquals(1);
-        }
-        else{
-            Assertions.assertEquals("Invalid CORS request", content);
-        }
+        employeeDTO = xmlMapper.readValue(content, EmployeeDTO.class);
+        verifyAssertNotNull();
+        verifyAssertEquals(1);
     }
 
     @Order(2)
-    @ParameterizedTest
-    @CsvSource({
-            TestConfigs.ORIGIN_MARCIOCLEY + ", 200",
-            TestConfigs.ORIGIN_GOOGLE + ", 403"
-    })
-    void findById(String origin, int expectedStatus) throws JsonProcessingException {
-        setSpecification(origin);
-
+    @Test
+    void findById() throws JsonProcessingException {
         var content = given(specification)
-                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .accept(MediaType.APPLICATION_XML_VALUE)
                 .pathParam("id", employeeDTO.getId())
                 .when()
                 .get("/{id}")
                 .then()
-                .statusCode(expectedStatus)
+                .statusCode(200)
                 .extract()
                 .body()
                 .asString();
 
-        if(expectedStatus == 200){
-            employeeDTO = objectMapper.readValue(content, EmployeeDTO.class);
-            verifyAssertNotNull();
-            verifyAssertEquals(1);
-        }
-        else{
-            Assertions.assertEquals("Invalid CORS request", content);
-        }
+        employeeDTO = xmlMapper.readValue(content, EmployeeDTO.class);
+        verifyAssertNotNull();
+        verifyAssertEquals(1);
     }
 
     @Order(3)
-    @ParameterizedTest
-    @CsvSource({
-            TestConfigs.ORIGIN_MARCIOCLEY + ", 200",
-            TestConfigs.ORIGIN_GOOGLE + ", 403"
-    })
-    void update(String origin, int expectedStatus) throws JsonProcessingException {
-        setSpecification(origin);
+    @Test
+    void update() throws JsonProcessingException {
         mockEmployee(2);
 
         var content = given(specification)
-                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .contentType(MediaType.APPLICATION_XML_VALUE)
+                .accept(MediaType.APPLICATION_XML_VALUE)
                 .pathParam("id", employeeDTO.getId())
                 .body(employeeDTO)
                 .when()
                 .put("/{id}")
                 .then()
-                .statusCode(expectedStatus)
+                .statusCode(200)
                 .extract()
                 .body()
                 .asString();
 
-        if(expectedStatus == 200){
-            employeeDTO = objectMapper.readValue(content, EmployeeDTO.class);
-            verifyAssertNotNull();
-            verifyAssertEquals(2);
-        }
-        else{
-            Assertions.assertEquals("Invalid CORS request", content);
-        }
+        employeeDTO = xmlMapper.readValue(content, EmployeeDTO.class);
+        verifyAssertNotNull();
+        verifyAssertEquals(2);
     }
 
     @Order(4)
-    @ParameterizedTest
-    @CsvSource({
-            TestConfigs.ORIGIN_MARCIOCLEY + ", 204",
-            TestConfigs.ORIGIN_GOOGLE + ", 403"
-    })
-    void deleteById(String origin, int expectedStatus) {
-        setSpecification(origin);
-
+    @Test
+    void deleteById() {
         var content = given(specification)
-                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .contentType(MediaType.APPLICATION_XML_VALUE)
                 .pathParam("id", employeeDTO.getId())
                 .when()
                 .delete("/{id}")
                 .then()
-                .statusCode(expectedStatus)
+                .statusCode(204)
                 .extract()
                 .body()
                 .asString();
 
-        if(expectedStatus == 204){
-            assertEquals("", content);
-        }
-        else{
-            assertEquals("Invalid CORS request", content);
-        }
-
+        assertEquals("", content);
     }
 
     @Order(5)
-    @ParameterizedTest
-    @CsvSource({
-            TestConfigs.ORIGIN_MARCIOCLEY + ", 200",
-            TestConfigs.ORIGIN_GOOGLE + ", 403"
-    })
-    void findAll(String origin, int expectedStatus) throws JsonProcessingException {
-        setSpecification(origin);
-
+    @Test
+    void findAll() throws JsonProcessingException {
         var content = given(specification)
-                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .accept(MediaType.APPLICATION_XML_VALUE)
                 .when()
                 .get()
                 .then()
-                .statusCode(expectedStatus)
+                .statusCode(200)
                 .extract()
                 .body()
                 .asString();
 
-        if(expectedStatus == 200){
-            var employees = objectMapper.readValue(content, EmployeeDTO[].class);
+            var employees = xmlMapper.readValue(content, EmployeeDTO[].class);
             employeeDTO = employees[0];
             verifyAssertNotNull();
             assertAll(
@@ -186,10 +137,14 @@ class EmployeeControllerTest extends AbstractIntegrationTest {
                     () -> assertEquals("767-83-0693", employeeDTO.getPis()),
                     () -> assertEquals(100, employees.length)
             );
-        }
-        else{
-            assertEquals("Invalid CORS request", content);
-        }
+
+        employeeDTO = employees[47];
+        verifyAssertNotNull();
+        assertAll(
+                () -> assertEquals(49, employeeDTO.getId()),
+                () ->assertEquals("Margit", employeeDTO.getName()),
+                () -> assertEquals("130-55-3113", employeeDTO.getPis())
+        );
     }
 
     private void mockEmployee(Integer n) {
@@ -204,9 +159,9 @@ class EmployeeControllerTest extends AbstractIntegrationTest {
         );
     }
 
-    private void setSpecification(String origin) {
+    private void setSpecification() {
         specification = new RequestSpecBuilder()
-                .addHeader(TestConfigs.HEADER_PARAM_ORIGIN, origin)
+                .addHeader(TestConfigs.HEADER_PARAM_ORIGIN, TestConfigs.ORIGIN_MARCIOCLEY)
                 .setBasePath("/employees")
                 .setPort(TestConfigs.SERVER_PORT)
                 .addFilter(new RequestLoggingFilter(LogDetail.ALL))
