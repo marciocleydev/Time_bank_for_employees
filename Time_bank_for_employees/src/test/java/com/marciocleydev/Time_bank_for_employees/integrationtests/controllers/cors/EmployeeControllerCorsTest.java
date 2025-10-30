@@ -3,8 +3,9 @@ package com.marciocleydev.Time_bank_for_employees.integrationtests.controllers.c
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.marciocleydev.Time_bank_for_employees.DTO.EmployeeDTO;
+import com.marciocleydev.Time_bank_for_employees.integrationtests.dto.EmployeeDTO;
 import com.marciocleydev.Time_bank_for_employees.config.TestConfigs;
+import com.marciocleydev.Time_bank_for_employees.integrationtests.dto.wrappers.WrapperEmployeeDTO;
 import com.marciocleydev.Time_bank_for_employees.integrationtests.testcontainers.AbstractIntegrationTest;
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.filter.log.LogDetail;
@@ -16,6 +17,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+
+import java.util.List;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.*;
@@ -168,6 +171,7 @@ class EmployeeControllerCorsTest extends AbstractIntegrationTest {
 
         var content = given(specification)
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .queryParams("page", 0, "size", 11, "direction", "asc")
                 .when()
                 .get()
                 .then()
@@ -177,14 +181,15 @@ class EmployeeControllerCorsTest extends AbstractIntegrationTest {
                 .asString();
 
         if(expectedStatus == 200){
-            var employees = objectMapper.readValue(content, EmployeeDTO[].class);
-            employeeDTO = employees[0];
+            WrapperEmployeeDTO wrapper = objectMapper.readValue(content, WrapperEmployeeDTO.class);
+            List<EmployeeDTO> employees = wrapper.getEmbedded().getEmployees();
+            employeeDTO = employees.getFirst();
             verifyAssertNotNull();
             assertAll(
-                    () -> assertEquals(2, employeeDTO.getId()),
-                    () ->assertEquals("Caralie", employeeDTO.getName()),
-                    () -> assertEquals("767-83-0693", employeeDTO.getPis()),
-                    () -> assertEquals(100, employees.length)
+                    () -> assertEquals(92, employeeDTO.getId()),
+                    () -> assertEquals("Aarika", employeeDTO.getName()),
+                    () -> assertEquals("157-85-2459", employeeDTO.getPis()),
+                    () -> assertEquals(11, employees.size())
             );
         }
         else{

@@ -4,6 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.marciocleydev.Time_bank_for_employees.config.TestConfigs;
 import com.marciocleydev.Time_bank_for_employees.integrationtests.controllers.withYaml.mapper.YAMLMapper;
 import com.marciocleydev.Time_bank_for_employees.integrationtests.dto.EmployeeDTO;
+import com.marciocleydev.Time_bank_for_employees.integrationtests.dto.wrappers.WrapperEmployeeDTO;
+import com.marciocleydev.Time_bank_for_employees.integrationtests.dto.wrappers.xml_yaml.PageModelEmployee;
 import com.marciocleydev.Time_bank_for_employees.integrationtests.testcontainers.AbstractIntegrationTest;
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.config.EncoderConfig;
@@ -18,6 +20,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 
 import java.util.Arrays;
+import java.util.List;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.*;
@@ -43,11 +46,11 @@ class EmployeeControllerYamlTest extends AbstractIntegrationTest {
         setSpecification();
 
         var content = given().config(
-                RestAssuredConfig.config()
-                        .encoderConfig(
-                                EncoderConfig.encoderConfig()
-                                        .encodeContentTypeAs(MediaType.APPLICATION_YAML_VALUE, ContentType.TEXT)
-                        )
+                        RestAssuredConfig.config()
+                                .encoderConfig(
+                                        EncoderConfig.encoderConfig()
+                                                .encodeContentTypeAs(MediaType.APPLICATION_YAML_VALUE, ContentType.TEXT)
+                                )
                 )
                 .spec(specification)
                 .contentType(MediaType.APPLICATION_YAML_VALUE)
@@ -151,42 +154,43 @@ class EmployeeControllerYamlTest extends AbstractIntegrationTest {
                 )
                 .spec(specification)
                 .accept(MediaType.APPLICATION_YAML_VALUE)
+                .queryParams("page", 0, "size", 11, "direction", "asc")
                 .when()
                 .get()
                 .then()
                 .statusCode(200)
                 .extract()
                 .body()
-                .as(EmployeeDTO[].class, yamlMapper);
+                .as(PageModelEmployee.class, yamlMapper);
 
-            var employees = Arrays.asList(content);
-            employeeDTO = employees.getFirst();
-            verifyAssertNotNull();
-            assertAll(
-                    () -> assertEquals(2, employeeDTO.getId()),
-                    () ->assertEquals("Caralie", employeeDTO.getName()),
-                    () -> assertEquals("767-83-0693", employeeDTO.getPis()),
-                    () -> assertEquals(100, employees.size())
-            );
-
-        employeeDTO = employees.get(47);
+        List<EmployeeDTO> employees = content.getContent();
+        employeeDTO = employees.getFirst();
         verifyAssertNotNull();
         assertAll(
-                () -> assertEquals(49, employeeDTO.getId()),
-                () ->assertEquals("Margit", employeeDTO.getName()),
-                () -> assertEquals("130-55-3113", employeeDTO.getPis())
+                () -> assertEquals(92, employeeDTO.getId()),
+                () -> assertEquals("Aarika", employeeDTO.getName()),
+                () -> assertEquals("157-85-2459", employeeDTO.getPis()),
+                () -> assertEquals(11, employees.size())
+        );
+
+        employeeDTO = employees.get(6);
+        verifyAssertNotNull();
+        assertAll(
+                () -> assertEquals(35, employeeDTO.getId()),
+                () -> assertEquals("Artair", employeeDTO.getName()),
+                () -> assertEquals("507-93-9859", employeeDTO.getPis())
         );
     }
 
     private void mockEmployee(Integer n) {
-        employeeDTO.setName("Leonardo "+ n);
-        employeeDTO.setPis("123456789"+n);
+        employeeDTO.setName("Leonardo " + n);
+        employeeDTO.setPis("123456789" + n);
     }
 
     private void verifyAssertEquals(Integer n) {
         assertAll(
-                () -> assertEquals(employeeDTO.getName(), "Leonardo "+ n),
-                () ->  assertEquals(employeeDTO.getPis(), "123456789"+n)
+                () -> assertEquals(employeeDTO.getName(), "Leonardo " + n),
+                () -> assertEquals(employeeDTO.getPis(), "123456789" + n)
         );
     }
 

@@ -9,13 +9,18 @@ import com.marciocleydev.Time_bank_for_employees.repositories.EmployeeRepository
 import com.marciocleydev.Time_bank_for_employees.services.EmployeeService;
 import com.marciocleydev.Time_bank_for_employees.unittests.mocks.MockEmployee;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.*;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.Link;
+import org.springframework.hateoas.PagedModel;
 
 import java.util.*;
 
@@ -32,6 +37,8 @@ class EmployeeServiceTest {
     private EmployeeRepository repository;
     @Mock
     private EmployeeMapper mapper;
+    @Mock
+    PagedResourcesAssembler<EmployeeDTO> assembler;
 
     @BeforeEach
     void setUp() {
@@ -156,45 +163,88 @@ class EmployeeServiceTest {
         verifyNoMoreInteractions(repository);
     }
 
-    @Disabled
+
     @Test
     void findAll() {
+        Pageable pageable = PageRequest.of(1, 20, Sort.by("name"));
+
         List<Employee> employeeList = input.mockEntityList();
-        List<EmployeeDTO> employeeDTOList = input.mockDTOList();
+        Page<Employee> employeePage = new PageImpl<>(employeeList, pageable, employeeList.size());
 
-        when(repository.findAll()).thenReturn(employeeList);
-        when(mapper.toDTOList(employeeList)).thenReturn(employeeDTOList);
+        when(repository.findAll(pageable)).thenReturn(employeePage);
+        when(mapper.toDTO(any(Employee.class))).thenAnswer(invocation -> {
+            Employee emp = invocation.getArgument(0);
+            return new EmployeeDTO(emp.getId(), emp.getName(), emp.getPis());
+        });
 
-        var result = employeeDTOList;//adicionei apenas para sumir o erro, correto-> //service.findAll();
-        assertNotNull(result);
-        assertEquals(20, result.size(),"Expected 20 employees in the list");
+        when(assembler.toModel(
+                ArgumentMatchers.<Page<EmployeeDTO>>any(),
+                any(Link.class)
+        )).thenAnswer(invocation -> {
+            Page<EmployeeDTO> dtoPage = invocation.getArgument(0);
+            Link selfLink = invocation.getArgument(1);
 
-        var employeeDTO1 = result.getFirst();
-        assertsEmployee(employeeDTO1, employeeDTOList.getFirst());
+            return PagedModel.of(
+                    dtoPage.getContent().stream().map(EntityModel::of).toList(),
+                    new PagedModel.PageMetadata(
+                            dtoPage.getSize(),
+                            dtoPage.getNumber(),
+                            dtoPage.getTotalElements()
+                    ),
+                    selfLink
+            );
+        });
 
-        var employeeDTO10 = result.get(9);
-        assertsEmployee(employeeDTO10, employeeDTOList.get(9));
+        var result = service.findAll(pageable);
+        var employeeDTOList = result.getContent().stream().toList();
 
-        var employeeDTO20 = result.getLast();
-        assertsEmployee(employeeDTO20, employeeDTOList.getLast());
+        assertNotNull(employeeDTOList);
+        assertEquals(20, result.getContent().size(),"Expected 20 employees in the list");
 
-        verify(repository).findAll();
-        verify(mapper).toDTOList(employeeList);
+        EmployeeDTO employeeDTO1 = employeeDTOList.getFirst().getContent();
+        assertsEmployee(employeeDTO1, employeeDTOList.getFirst().getContent());
+
+        var employeeDTO6 = employeeDTOList.get(5).getContent();
+        assertsEmployee(employeeDTO6, employeeDTOList.get(5).getContent());
+
+        var employeeDTO11 = employeeDTOList.get(10).getContent();
+        assertsEmployee(employeeDTO11, employeeDTOList.get(10).getContent());
+
+        verify(repository).findAll(pageable);
+        verify(mapper, times(20)).toDTO(any(Employee.class));
         verifyNoMoreInteractions(repository, mapper);
     }
 
     @Test
     void findAll_emptyList() {
-        when(repository.findAll()).thenReturn(Collections.emptyList());
-        when(mapper.toDTOList(Collections.emptyList())).thenReturn(Collections.emptyList());
+        Pageable pageable = PageRequest.of(1, 12, Sort.by("name"));
 
-        var result = new ArrayList<>();//adicionei apenas para sumir o erro, correto-> //service.findAll();
+        when(repository.findAll(pageable)).thenReturn(Page.empty(pageable));
+
+        when(assembler.toModel(
+                ArgumentMatchers.<Page<EmployeeDTO>>any(),
+                any(Link.class)
+        )).thenAnswer(invocation -> {
+            Page<EmployeeDTO> dtoPage = invocation.getArgument(0);
+            Link link  = invocation.getArgument(1);
+
+            return PagedModel.of(
+                    dtoPage.getContent().stream().map(EntityModel::of).toList(),
+                    new PagedModel.PageMetadata(
+                            dtoPage.getSize(),
+                            dtoPage.getNumber(),
+                            dtoPage.getTotalElements()
+                    ),
+                    link
+            );
+        });
+        var result = service.findAll(pageable);
 
         assertNotNull(result);
-        assertTrue(result.isEmpty());
+        assertTrue(result.getContent().isEmpty(), "Expected empty employee list");
 
-        verify(repository).findAll();
-        verify(mapper).toDTOList(Collections.emptyList());
+        verify(repository).findAll(pageable);
+        verify(mapper, never()).toDTO(any()); // garante que não converteu nada
         verifyNoMoreInteractions(repository, mapper);
     }
 
@@ -221,7 +271,7 @@ class EmployeeServiceTest {
 
         boolean hasFindAllLink = dto.getLinks().stream()
                 .anyMatch(link -> "findAll".equals(link.getRel().value())
-                        && link.getHref().endsWith("/employees")
+                        && link.getHref().endsWith("/employees?page=1&size=12&direction=asc")
                         && "GET".equals(link.getType()));
 
         assertTrue(hasFindAllLink, "EmployeeDTO should have a findAll link, but it doesn't");

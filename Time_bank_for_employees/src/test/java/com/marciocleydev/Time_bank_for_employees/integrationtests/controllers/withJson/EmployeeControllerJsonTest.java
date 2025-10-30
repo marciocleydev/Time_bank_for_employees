@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marciocleydev.Time_bank_for_employees.config.TestConfigs;
 import com.marciocleydev.Time_bank_for_employees.integrationtests.dto.EmployeeDTO;
+import com.marciocleydev.Time_bank_for_employees.integrationtests.dto.wrappers.WrapperEmployeeDTO;
 import com.marciocleydev.Time_bank_for_employees.integrationtests.testcontainers.AbstractIntegrationTest;
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.filter.log.LogDetail;
@@ -14,6 +15,8 @@ import io.restassured.specification.RequestSpecification;
 import org.junit.jupiter.api.*;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+
+import java.util.List;
 
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.*;
@@ -118,6 +121,7 @@ class EmployeeControllerJsonTest extends AbstractIntegrationTest {
     void findAll() throws JsonProcessingException {
         var content = given(specification)
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .queryParams("page", 0, "size", 11, "direction", "asc")
                 .when()
                 .get()
                 .then()
@@ -126,34 +130,35 @@ class EmployeeControllerJsonTest extends AbstractIntegrationTest {
                 .body()
                 .asString();
 
-            var employees = objectMapper.readValue(content, EmployeeDTO[].class);
-            employeeDTO = employees[0];
-            verifyAssertNotNull();
-            assertAll(
-                    () -> assertEquals(2, employeeDTO.getId()),
-                    () ->assertEquals("Caralie", employeeDTO.getName()),
-                    () -> assertEquals("767-83-0693", employeeDTO.getPis()),
-                    () -> assertEquals(100, employees.length)
-            );
-
-        employeeDTO = employees[47];
+        WrapperEmployeeDTO wrapper = objectMapper.readValue(content, WrapperEmployeeDTO.class);
+        List<EmployeeDTO> employees = wrapper.getEmbedded().getEmployees();
+        employeeDTO = employees.getFirst();
         verifyAssertNotNull();
         assertAll(
-                () -> assertEquals(49, employeeDTO.getId()),
-                () ->assertEquals("Margit", employeeDTO.getName()),
-                () -> assertEquals("130-55-3113", employeeDTO.getPis())
+                () -> assertEquals(92, employeeDTO.getId()),
+                () -> assertEquals("Aarika", employeeDTO.getName()),
+                () -> assertEquals("157-85-2459", employeeDTO.getPis()),
+                () -> assertEquals(11, employees.size())
+        );
+
+        employeeDTO = employees.get(6);
+        verifyAssertNotNull();
+        assertAll(
+                () -> assertEquals(35, employeeDTO.getId()),
+                () -> assertEquals("Artair", employeeDTO.getName()),
+                () -> assertEquals("507-93-9859", employeeDTO.getPis())
         );
     }
 
     private void mockEmployee(Integer n) {
-        employeeDTO.setName("Leonardo "+ n);
-        employeeDTO.setPis("123456789"+n);
+        employeeDTO.setName("Leonardo " + n);
+        employeeDTO.setPis("123456789" + n);
     }
 
     private void verifyAssertEquals(Integer n) {
         assertAll(
-                () -> assertEquals(employeeDTO.getName(), "Leonardo "+ n),
-                () ->  assertEquals(employeeDTO.getPis(), "123456789"+n)
+                () -> assertEquals(employeeDTO.getName(), "Leonardo " + n),
+                () -> assertEquals(employeeDTO.getPis(), "123456789" + n)
         );
     }
 
