@@ -1,9 +1,6 @@
 package com.marciocleydev.Time_bank_for_employees.exceptions.handler;
 
-import com.marciocleydev.Time_bank_for_employees.exceptions.BadRequestException;
-import com.marciocleydev.Time_bank_for_employees.exceptions.DataIntegrityException;
-import com.marciocleydev.Time_bank_for_employees.exceptions.ResourceNotFoundException;
-import com.marciocleydev.Time_bank_for_employees.exceptions.StandardError;
+import com.marciocleydev.Time_bank_for_employees.exceptions.*;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -37,6 +34,14 @@ public class CustomResponseEntityExceptionHandler extends ResponseEntityExceptio
     public ResponseEntity<StandardError> handleDataIntegrityException(DataIntegrityException e, HttpServletRequest request){
         String error = "Bad request";
         HttpStatus status = HttpStatus.BAD_REQUEST;
+        StandardError standardError = new StandardError(Instant.now(),status.value(),error,e.getMessage(),request.getRequestURI());
+        return ResponseEntity.status(status).body(standardError);
+    }
+
+    @ExceptionHandler(InvalidJwtAuthenticationException.class)
+    public ResponseEntity<StandardError> handleInvalidJwtAuthenticationException(InvalidJwtAuthenticationException e, HttpServletRequest request){
+        String error = "Invalid JWT token";
+        HttpStatus status = HttpStatus.FORBIDDEN;
         StandardError standardError = new StandardError(Instant.now(),status.value(),error,e.getMessage(),request.getRequestURI());
         return ResponseEntity.status(status).body(standardError);
     }

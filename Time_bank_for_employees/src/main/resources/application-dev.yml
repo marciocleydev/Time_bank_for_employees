@@ -2,6 +2,11 @@ server:
   port: 8080
 cors:
   originPattern: http://localhost:8080,http://localhost:3000,https://www.linkedin.com/in/marciocleydev
+security:
+  jwt:
+    token:
+      secret-key: 53cr37 #isso deve ser mais complexo e guardado em local seguro
+      expire-length: 3600000  # 1 Hr
 spring:
   application:
     name: time_bank_for_employees
