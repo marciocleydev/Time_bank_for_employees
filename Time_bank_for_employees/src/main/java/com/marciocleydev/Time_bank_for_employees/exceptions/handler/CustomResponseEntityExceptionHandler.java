@@ -1,6 +1,8 @@
 package com.marciocleydev.Time_bank_for_employees.exceptions.handler;
 
 import com.marciocleydev.Time_bank_for_employees.exceptions.*;
+import org.springframework.security.authentication.BadCredentialsException;
+
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -42,6 +44,14 @@ public class CustomResponseEntityExceptionHandler extends ResponseEntityExceptio
     public ResponseEntity<StandardError> handleInvalidJwtAuthenticationException(InvalidJwtAuthenticationException e, HttpServletRequest request){
         String error = "Invalid JWT token";
         HttpStatus status = HttpStatus.FORBIDDEN;
+        StandardError standardError = new StandardError(Instant.now(),status.value(),error,e.getMessage(),request.getRequestURI());
+        return ResponseEntity.status(status).body(standardError);
+    }
+
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<StandardError> handleBadCredentialsException(BadCredentialsException e, HttpServletRequest request){
+        String error = "Bad credentials";
+        HttpStatus status = HttpStatus.UNAUTHORIZED;
         StandardError standardError = new StandardError(Instant.now(),status.value(),error,e.getMessage(),request.getRequestURI());
         return ResponseEntity.status(status).body(standardError);
     }

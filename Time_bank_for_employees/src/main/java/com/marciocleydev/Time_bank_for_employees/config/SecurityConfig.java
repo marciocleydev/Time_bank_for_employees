@@ -17,7 +17,6 @@ import org.springframework.security.crypto.password.Pbkdf2PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import java.security.Security;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -53,36 +52,40 @@ public class SecurityConfig {
         return passwordEncoder;
     }
 
+    //Isso expõe o AuthenticationManager como um bean no contexto do Spring.
+    //Ele é necessário para que você consiga autenticar usuários manualmente, por exemplo no endpoint /auth/signin.
     @Bean
     AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
         return configuration.getAuthenticationManager();
     }
 
+    //instancia meu filtro que vai validar o JWT antes da requisição chegar ao controller.
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         JwtTokenFilter filter = new JwtTokenFilter(tokenProvider);
         return http
-                .httpBasic(AbstractHttpConfigurer::disable)
-                .csrf(AbstractHttpConfigurer::disable)
-                .addFilterBefore(filter, UsernamePasswordAuthenticationFilter.class)
-                .sessionManagement(
+                .httpBasic(AbstractHttpConfigurer::disable)//Desativa autenticação HTTP básica (usuário/senha via popup).
+                .csrf(AbstractHttpConfigurer::disable)//Desativa proteção CSRF, pois APIs REST stateless não precisam disso.
+                .addFilterBefore(filter, UsernamePasswordAuthenticationFilter.class)//Isso coloca o filtro antes do filtro padrão, toda request vai passar pelo filtro primeiro
+                .sessionManagement(//Define que nenhuma sessão será criada, Cada requisição deve enviar o JWT — não existe login persistido no servidor.
                         session -> session
                                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(
                         auth -> auth
                                 .requestMatchers(
+                   //Esses endpoints podem ser acessados sem autenticação.
                                         "/auth/signin",
                                         "/auth/refresh",
                                         "/auth/createUser",
                                         "/swagger-ui/**",
                                         "/v3/api-docs/**")
                                 .permitAll()
-                                .requestMatchers("/**").authenticated()
-                                .requestMatchers("/users").denyAll()
+                                .requestMatchers("/**").authenticated()//todoh o resto precisa de autenticação
+                                .requestMatchers("/users").denyAll()//está totalmente bloqueado, mesmo se autenticado.
                                 .anyRequest().authenticated()
                 )
-                .cors(cors -> {})
-                .build();
+                .cors(cors -> {})//permite que outra config de CORS seja aplicada
+                .build(); //constroi o SecurityFilterChain que será usado pelo Spring Security.
     }
 }
