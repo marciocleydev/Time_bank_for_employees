@@ -50,7 +50,7 @@ public class CustomResponseEntityExceptionHandler extends ResponseEntityExceptio
 
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<StandardError> handleBadCredentialsException(BadCredentialsException e, HttpServletRequest request){
-        String error = "Bad credentials";
+        String error = "Invalid username or password";
         HttpStatus status = HttpStatus.UNAUTHORIZED;
         StandardError standardError = new StandardError(Instant.now(),status.value(),error,e.getMessage(),request.getRequestURI());
         return ResponseEntity.status(status).body(standardError);

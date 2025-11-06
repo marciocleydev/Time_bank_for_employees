@@ -13,9 +13,9 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.util.Base64;
 import java.util.Date;
@@ -36,18 +36,13 @@ public class JwtTokenProvider {
 
     Algorithm algorithm = null;
 
+    @Value("${security.jwt.token.issuer:time-bank-api}")
     private String issuer;
 
     @PostConstruct //method executado uma única vez depois que a bean é criada e as dependências foram injetadas.
     protected void init() {
         secretKey = Base64.getEncoder().encodeToString(secretKey.getBytes()); //codifica os bytes da chave em Base64) e reatribui ao campo.
         algorithm = Algorithm.HMAC256(secretKey);//cria a instância do algoritmo HMAC-SHA256 (da biblioteca Auth0 JWT) usando essa chave codificada, para assinar/verificar tokens JWT.
-
-        //O issuerUrl é o identificador da aplicação que gerou o token (o emissor), É uma assinatura de “quem emitiu o token”.
-        issuer = ServletUriComponentsBuilder
-                .fromCurrentContextPath()
-                .build()
-                .toUriString();
     }
 
     public TokenDTO createAccessToken(String username, List<String> roles) {
@@ -66,6 +61,7 @@ public class JwtTokenProvider {
                 .withIssuedAt(now)
                 .withExpiresAt(refreshTokenVality)
                 .withSubject(username)
+                .withIssuer(issuer)
                 .sign(algorithm);
     }
 
@@ -112,6 +108,27 @@ public class JwtTokenProvider {
         } catch (Exception e) {
             return false;
         }
+    }
+
+    public TokenDTO refreshToken(String username, String refreshToken) {
+        var refreshTokenClean = refreshTokenContainsBearer(refreshToken);
+
+        JWTVerifier verifier = JWT.require(algorithm).build();
+        DecodedJWT decodedJWT = verifier.verify(refreshTokenClean);
+
+        String usernameFromRefreshToken = decodedJWT.getSubject();
+        if (!username.equals(usernameFromRefreshToken)) {
+            throw new UsernameNotFoundException("username from RefreshToken does not match the username send by url!");
+        }
+        List<String> roles = decodedJWT.getClaim("roles").asList(String.class);
+        return createAccessToken(username, roles);
+    }
+
+    private static String refreshTokenContainsBearer(String refreshToken) {
+        if (StringUtils.hasText(refreshToken) || refreshToken.startsWith("Bearer ")) {
+            return refreshToken.substring("Bearer ".length());
+        }
+        return refreshToken;
     }
 
 }

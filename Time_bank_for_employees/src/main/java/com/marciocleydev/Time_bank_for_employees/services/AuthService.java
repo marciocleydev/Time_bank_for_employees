@@ -6,7 +6,6 @@ import com.marciocleydev.Time_bank_for_employees.repositories.UserRepository;
 import com.marciocleydev.Time_bank_for_employees.security.jwt.JwtTokenProvider;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -41,7 +40,17 @@ public class AuthService {
                 credentials.getUsername(),
                 user.getRoles()
         );
+        return ResponseEntity.ok(token);
+    }
 
+    public ResponseEntity<TokenDTO> refreshToken(String username, String refreshToken){
+        var user = userRepository.findByUsername(username);
+        TokenDTO token;
+        if(user != null){
+            token = tokenProvider.refreshToken(username, refreshToken);
+        }else{
+            throw new UsernameNotFoundException("User: " + username + " not found!");
+        }
         return ResponseEntity.ok(token);
     }
 }
