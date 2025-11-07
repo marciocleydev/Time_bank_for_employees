@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marciocleydev.Time_bank_for_employees.config.TestConfigs;
 import com.marciocleydev.Time_bank_for_employees.integrationtests.dto.EmployeeDTO;
+import com.marciocleydev.Time_bank_for_employees.integrationtests.dto.security.AccountCredentialsDTO;
+import com.marciocleydev.Time_bank_for_employees.integrationtests.dto.security.TokenDTO;
 import com.marciocleydev.Time_bank_for_employees.integrationtests.dto.wrappers.WrapperEmployeeDTO;
 import com.marciocleydev.Time_bank_for_employees.integrationtests.testcontainers.AbstractIntegrationTest;
 import io.restassured.builder.RequestSpecBuilder;
@@ -27,13 +29,39 @@ class EmployeeControllerJsonTest extends AbstractIntegrationTest {
     private static RequestSpecification specification;
     private static ObjectMapper objectMapper;
     private static EmployeeDTO employeeDTO;
+    private static TokenDTO tokenDTO;
 
     @BeforeAll
     static void setUp() {
         objectMapper = new ObjectMapper();
         objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-
         employeeDTO = new EmployeeDTO();
+
+        tokenDTO = new TokenDTO();
+    }
+
+    @Order(0)
+    @Test
+    void signin() {
+        AccountCredentialsDTO credentials = new AccountCredentialsDTO();
+        credentials.setUsername("marcio");
+        credentials.setPassword("admin123");
+
+        tokenDTO = given()
+                .basePath("/auth/signin")
+                .port(TestConfigs.SERVER_PORT)
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .body(credentials)
+                .when()
+                .post()
+                .then()
+                .statusCode(200)
+                .extract()
+                .body()
+                .as(TokenDTO.class);
+
+        assertNotNull(tokenDTO.getAccessToken());
+        assertNotNull(tokenDTO.getRefreshToken());
     }
 
     @Order(1)
@@ -165,6 +193,7 @@ class EmployeeControllerJsonTest extends AbstractIntegrationTest {
     private void setSpecification() {
         specification = new RequestSpecBuilder()
                 .addHeader(TestConfigs.HEADER_PARAM_ORIGIN, TestConfigs.ORIGIN_MARCIOCLEY)
+                .addHeader(TestConfigs.HEADER_PARAM_AUTHORIZATION, "Bearer " + tokenDTO.getAccessToken())
                 .setBasePath("/employees")
                 .setPort(TestConfigs.SERVER_PORT)
                 .addFilter(new RequestLoggingFilter(LogDetail.ALL))

@@ -1,8 +1,8 @@
 package com.marciocleydev.Time_bank_for_employees.controllers;
 
 import com.marciocleydev.Time_bank_for_employees.DTO.security.AccountCredentialsDTO;
+import com.marciocleydev.Time_bank_for_employees.controllers.docs.AuthControllerDocs;
 import com.marciocleydev.Time_bank_for_employees.services.AuthService;
-import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "Authentication", description = "Authentication endpoint")
 @RestController
 @RequestMapping(value = "/auth")
-public class AuthController {
+public class AuthController implements AuthControllerDocs {
 
     private AuthService authService;
 
@@ -20,9 +20,9 @@ public class AuthController {
         this.authService = userService;
     }
 
-    @Operation(summary = "Authenticate a user and generate a token")
+    @Override
     @PostMapping(value = "/signin")
-    public ResponseEntity<?> singnin(@RequestBody AccountCredentialsDTO credentials){
+    public ResponseEntity<?> signin(@RequestBody AccountCredentialsDTO credentials){
         if (credentialsIsInvalid(credentials)){
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Invalid client request!");
         }
@@ -30,9 +30,10 @@ public class AuthController {
         if (token == null){
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Invalid client request!");
         }
-        return ResponseEntity.ok(token);
+        return token;
     }
 
+    @Override
     @PutMapping("/refresh/{username}")
     public ResponseEntity<?> refreshToken(
             @PathVariable("username") String username,
@@ -45,7 +46,7 @@ public class AuthController {
         if (token == null){
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Invalid client request!");
         }
-        return ResponseEntity.ok(token);
+        return token;
     }
 
     private boolean credentialsIsInvalid(AccountCredentialsDTO credentials) {

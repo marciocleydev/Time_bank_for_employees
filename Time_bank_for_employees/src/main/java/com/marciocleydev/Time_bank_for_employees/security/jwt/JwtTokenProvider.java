@@ -5,6 +5,7 @@ import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.marciocleydev.Time_bank_for_employees.DTO.security.TokenDTO;
+import com.marciocleydev.Time_bank_for_employees.exceptions.InvalidJwtAuthenticationException;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -106,7 +107,7 @@ public class JwtTokenProvider {
             decodedToken(token);
             return true;
         } catch (Exception e) {
-            return false;
+            throw new InvalidJwtAuthenticationException("Invalid or expired token!");
         }
     }
 
@@ -125,7 +126,7 @@ public class JwtTokenProvider {
     }
 
     private static String refreshTokenContainsBearer(String refreshToken) {
-        if (StringUtils.hasText(refreshToken) || refreshToken.startsWith("Bearer ")) {
+        if (StringUtils.hasText(refreshToken) && refreshToken.startsWith("Bearer ")) {
             return refreshToken.substring("Bearer ".length());
         }
         return refreshToken;

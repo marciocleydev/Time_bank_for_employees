@@ -42,7 +42,7 @@ public class CustomResponseEntityExceptionHandler extends ResponseEntityExceptio
 
     @ExceptionHandler(InvalidJwtAuthenticationException.class)
     public ResponseEntity<StandardError> handleInvalidJwtAuthenticationException(InvalidJwtAuthenticationException e, HttpServletRequest request){
-        String error = "Invalid JWT token";
+        String error = "Invalid or expired token";
         HttpStatus status = HttpStatus.FORBIDDEN;
         StandardError standardError = new StandardError(Instant.now(),status.value(),error,e.getMessage(),request.getRequestURI());
         return ResponseEntity.status(status).body(standardError);
