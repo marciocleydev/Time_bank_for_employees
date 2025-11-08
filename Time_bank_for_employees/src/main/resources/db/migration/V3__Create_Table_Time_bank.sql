@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS `time_bank` (
-                                           `total_value` double DEFAULT NULL,
+                                           `total_value` INT DEFAULT NULL,
                                            `employee_id` bigint DEFAULT NULL,
                                            `id` bigint NOT NULL AUTO_INCREMENT,
                                            `last_update` datetime(6) DEFAULT NULL,

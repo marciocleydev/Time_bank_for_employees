@@ -1,36 +1,38 @@
-package com.marciocleydev.Time_bank_for_employees.DTO;
-import org.springframework.hateoas.RepresentationModel;
+package com.marciocleydev.Time_bank_for_employees.integrationtests.dto;
+import com.marciocleydev.Time_bank_for_employees.entities.Employee;
+import jakarta.xml.bind.annotation.XmlRootElement;
 
 import java.io.Serial;
 import java.io.Serializable;
 import java.time.Instant;
 import java.util.Objects;
 
-public class TimeBankDTO extends RepresentationModel<TimeBankDTO> implements Serializable {
+@XmlRootElement
+public class TimeBankDTO implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
 
         private Long id;
         private Double totalValue;
         private Instant lastUpdate;
-        private Long employeeId;
+        private Employee employee;
 
         public TimeBankDTO() {
         }
 
-        public TimeBankDTO( Long id, Double totalValue, Instant lastUpdate, Long employeeId) {
+        public TimeBankDTO(Long id, Double totalValue, Instant lastUpdate, Employee employee) {
+            this.employee = employee;
             this.id = id;
-            this.employeeId = employeeId;
             this.lastUpdate = lastUpdate;
             this.totalValue = totalValue;
         }
 
-    public Long getEmployeeId() {
-        return employeeId;
+    public Employee getEmployee() {
+        return employee;
     }
 
-    public void setEmployeeId(Long employeeId) {
-        this.employeeId = employeeId;
+    public void setEmployee(Employee employee) {
+        this.employee = employee;
     }
 
     public Long getId() {
@@ -61,11 +63,11 @@ public class TimeBankDTO extends RepresentationModel<TimeBankDTO> implements Ser
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         TimeBankDTO that = (TimeBankDTO) o;
-        return Objects.equals(id, that.id) && Objects.equals(totalValue, that.totalValue) && Objects.equals(lastUpdate, that.lastUpdate) && Objects.equals(employeeId, that.employeeId);
+        return Objects.equals(id, that.id) && Objects.equals(totalValue, that.totalValue) && Objects.equals(lastUpdate, that.lastUpdate) && Objects.equals(employee, that.employee);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, totalValue, lastUpdate, employeeId);
+        return Objects.hash(id, totalValue, lastUpdate, employee);
     }
 }

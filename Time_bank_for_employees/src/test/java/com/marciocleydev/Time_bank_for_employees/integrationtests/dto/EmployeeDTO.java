@@ -13,6 +13,7 @@ public class EmployeeDTO implements Serializable {
     private Long id;
     private String name;
     private String pis;
+    private Long timeBankId;
 
     public EmployeeDTO() {
     }
@@ -39,6 +40,13 @@ public class EmployeeDTO implements Serializable {
 
     public void setPis(String pis) {
         this.pis = pis;
+    }
+
+    public Long getTimeBankId() {
+        return timeBankId;
+    }
+    public void setTimeBankId(Long timeBankId) {
+        this.timeBankId = timeBankId;
     }
 
 }

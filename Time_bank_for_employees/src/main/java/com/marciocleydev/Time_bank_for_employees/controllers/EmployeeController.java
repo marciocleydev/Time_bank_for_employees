@@ -4,7 +4,6 @@ import com.marciocleydev.Time_bank_for_employees.DTO.EmployeeDTO;
 import com.marciocleydev.Time_bank_for_employees.controllers.docs.EmployeeControllerDocs;
 import com.marciocleydev.Time_bank_for_employees.services.EmployeeService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -15,7 +14,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
-import java.util.List;
 
 @RestController
 @RequestMapping("/employees")

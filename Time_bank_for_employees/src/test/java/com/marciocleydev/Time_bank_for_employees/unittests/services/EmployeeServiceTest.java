@@ -1,13 +1,16 @@
 package com.marciocleydev.Time_bank_for_employees.unittests.services;
 
 import com.marciocleydev.Time_bank_for_employees.DTO.EmployeeDTO;
+import com.marciocleydev.Time_bank_for_employees.DTO.TimeBankDTO;
 import com.marciocleydev.Time_bank_for_employees.entities.Employee;
 import com.marciocleydev.Time_bank_for_employees.exceptions.DataIntegrityException;
 import com.marciocleydev.Time_bank_for_employees.exceptions.ResourceNotFoundException;
 import com.marciocleydev.Time_bank_for_employees.mapper.EmployeeMapper;
 import com.marciocleydev.Time_bank_for_employees.repositories.EmployeeRepository;
 import com.marciocleydev.Time_bank_for_employees.services.EmployeeService;
+import com.marciocleydev.Time_bank_for_employees.services.TimeBankService;
 import com.marciocleydev.Time_bank_for_employees.unittests.mocks.MockEmployee;
+import com.marciocleydev.Time_bank_for_employees.unittests.mocks.MockTimeBank;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -30,6 +33,7 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class EmployeeServiceTest {
     MockEmployee input;
+    MockTimeBank timeBankInput;
 
     @InjectMocks
     private EmployeeService service;
@@ -38,11 +42,14 @@ class EmployeeServiceTest {
     @Mock
     private EmployeeMapper mapper;
     @Mock
+    private TimeBankService timeBankService;
+    @Mock
     PagedResourcesAssembler<EmployeeDTO> assembler;
 
     @BeforeEach
     void setUp() {
         input = new MockEmployee();
+        timeBankInput = new MockTimeBank();
     }
 
     @Test
@@ -75,6 +82,7 @@ class EmployeeServiceTest {
 
     @Test
     void create() {
+        TimeBankDTO timeBankDTO = timeBankInput.mockDTO(1);
         Employee employee = input.mockEntity(1);
         employee.setId(null);
 
@@ -82,6 +90,7 @@ class EmployeeServiceTest {
         EmployeeDTO employeeDTO = input.mockDTO(1);
         employeeDTO.setId(null);
 
+        when(timeBankService.create(new TimeBankDTO())).thenReturn(timeBankDTO);
         when(repository.save(employee)).thenReturn(employee);
         when(mapper.toEntity(employeeDTO)).thenReturn(employee);
         when(mapper.toDTO(employee)).thenReturn(persistedEmployeeDTO);
@@ -174,7 +183,7 @@ class EmployeeServiceTest {
         when(repository.findAll(pageable)).thenReturn(employeePage);
         when(mapper.toDTO(any(Employee.class))).thenAnswer(invocation -> {
             Employee emp = invocation.getArgument(0);
-            return new EmployeeDTO(emp.getId(), emp.getName(), emp.getPis());
+            return new EmployeeDTO(emp.getId(), emp.getName(), emp.getPis(), null);
         });
 
         when(assembler.toModel(

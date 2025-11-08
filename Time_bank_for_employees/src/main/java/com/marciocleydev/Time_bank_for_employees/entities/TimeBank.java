@@ -16,7 +16,7 @@ public class TimeBank implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private Double totalValue;
+    private Integer totalValue;
     private Instant lastUpdate;
     @JsonIgnore
     @OneToOne
@@ -26,7 +26,7 @@ public class TimeBank implements Serializable {
     public TimeBank() {
     }
 
-    public TimeBank( Long id, Double totalValue, Instant lastUpdate, Employee employee) {
+    public TimeBank( Long id, Integer totalValue, Instant lastUpdate, Employee employee) {
         this.employee = employee;
         this.id = id;
         this.lastUpdate = lastUpdate;
@@ -57,11 +57,11 @@ public class TimeBank implements Serializable {
         this.lastUpdate = lastUpdate;
     }
 
-    public Double getTotalValue() {
+    public Integer getTotalValue() {
         return totalValue;
     }
 
-    public void setTotalValue(Double totalValue) {
+    public void setTotalValue(Integer totalValue) {
         this.totalValue = totalValue;
     }
 

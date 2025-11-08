@@ -1,6 +1,7 @@
 package com.marciocleydev.Time_bank_for_employees.services;
 
 import com.marciocleydev.Time_bank_for_employees.DTO.EmployeeDTO;
+import com.marciocleydev.Time_bank_for_employees.DTO.TimeBankDTO;
 import com.marciocleydev.Time_bank_for_employees.controllers.EmployeeController;
 import com.marciocleydev.Time_bank_for_employees.entities.Employee;
 import com.marciocleydev.Time_bank_for_employees.exceptions.DataIntegrityException;
@@ -29,6 +30,9 @@ public class EmployeeService  {
     private EmployeeRepository repository;
     @Autowired
     private EmployeeMapper mapper;
+
+    @Autowired
+    private TimeBankService timeBankService;
 
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @Autowired
@@ -67,17 +71,21 @@ public class EmployeeService  {
         return employeeDTO;
     }
 
-    public EmployeeDTO create(EmployeeDTO employee) {
-        logger.info(" Trying to create an employee !  ");
-        if (employee.getId() != null) {
-            throw new DataIntegrityException("Employee ID must be null to create a new employee");
+    public EmployeeDTO create(EmployeeDTO employeeDTO) {
+        logger.info(" Trying to create an employeeDTO !  ");
+        if (employeeDTO.getId() != null) {
+            throw new DataIntegrityException("Employee ID must be null to create a new employeeDTO");
         }
-        var persistedEmployee= repository.save(mapper.toEntity(employee));
+
+        var persistedTimeBank = timeBankService.create(new TimeBankDTO());
+        employeeDTO.setTimeBankId(persistedTimeBank.getId());
+
+        var persistedEmployee= repository.save(mapper.toEntity(employeeDTO));
         logger.info("Employee created! ID: {}", persistedEmployee.getId());
 
-        var employeeDTO = mapper.toDTO(persistedEmployee);
-        addHateoasLinks(employeeDTO);
-        return employeeDTO;
+        var persistedEmployeeDTO = mapper.toDTO(persistedEmployee);
+        addHateoasLinks(persistedEmployeeDTO);
+        return persistedEmployeeDTO;
     }
 
     public EmployeeDTO update(EmployeeDTO newEmployee, Long id) {

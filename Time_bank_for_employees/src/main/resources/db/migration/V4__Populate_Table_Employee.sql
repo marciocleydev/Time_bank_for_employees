@@ -1,4 +1,4 @@
-insert into employee (name, pis) values ('Caralie', '767-83-0693'),
+insert into `employee` (name, pis) values ('Caralie', '767-83-0693'),
                                         ('Merridie', '181-72-7997'),
                                         ('Brand', '622-54-4470'),
                                         ('Giovanna', '831-42-5539'),

@@ -2,22 +2,16 @@ package com.marciocleydev.Time_bank_for_employees.services;
 
 import com.marciocleydev.Time_bank_for_employees.DTO.TimeBankDTO;
 import com.marciocleydev.Time_bank_for_employees.controllers.TimeBankController;
-import com.marciocleydev.Time_bank_for_employees.entities.TimeBank;
-import com.marciocleydev.Time_bank_for_employees.exceptions.DataIntegrityException;
 import com.marciocleydev.Time_bank_for_employees.exceptions.ResourceNotFoundException;
 import com.marciocleydev.Time_bank_for_employees.mapper.TimeBankMapper;
+import com.marciocleydev.Time_bank_for_employees.repositories.EmployeeRepository;
 import com.marciocleydev.Time_bank_for_employees.repositories.TimeBankRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PagedResourcesAssembler;
-import org.springframework.hateoas.EntityModel;
-import org.springframework.hateoas.Link;
-import org.springframework.hateoas.PagedModel;
-import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.stereotype.Service;
+
+import java.time.Instant;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
@@ -26,53 +20,57 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 public class TimeBankService {
 
     @Autowired
-    private TimeBankRepository repository;
+    EmployeeRepository employeeRepository;
+    @Autowired
+    private TimeBankRepository TimeBankRepository;
     @Autowired
     private TimeBankMapper mapper;
 
-    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
-    @Autowired
-    PagedResourcesAssembler<TimeBankDTO> assembler;
-
     private static final Logger logger = LoggerFactory.getLogger(TimeBankService.class);
 
-    public PagedModel<EntityModel<TimeBankDTO>> findAll(Pageable pageable) {
-        logger.info("Finding all timeBankList");
 
-        var timeBankList = repository.findAll(pageable);
-
-        var timeBankListWithLinks = timeBankList.map(timeBank -> {
-            var timeBankDTO = mapper.toDTO(timeBank);
-            addHateoasLinks(timeBankDTO);
-            return timeBankDTO;
-        });
-
-        Link findAllLink = WebMvcLinkBuilder.linkTo(
-                WebMvcLinkBuilder.methodOn(TimeBankController.class)
-                        .findAll(
-                                pageable.getPageNumber(),
-                                pageable.getPageSize(),
-                                pageable.getSort().toString()
-                        )
-        ).withSelfRel();
-        return assembler.toModel(timeBankListWithLinks, findAllLink);
+    public TimeBankDTO getBalance(Long employeeId){
+        logger.info("Getting balance for employee id: {}", employeeId);
+        var employee = employeeRepository.findById(employeeId).orElseThrow(()->new ResourceNotFoundException("Employee not found! ID: ", employeeId));
+        var timeBankDTO = mapper.toDTO(employee.getTimeBank());
+        addHateoasLinks(timeBankDTO);
+        return timeBankDTO;
     }
 
-    public TimeBankDTO findById(Long id) {
-        logger.info("Finding timeBank by id {}", id);
-        TimeBank timeBank =  repository.findById(id).orElseThrow(()->new ResourceNotFoundException("TimeBank not found! ID: ", id));
+    public TimeBankDTO addHours(Long employeeId, Integer minutes){
+        logger.info("Adding {} minutes to employeeId id: {}", minutes, employeeId);
+        var employeePersisted = employeeRepository.findById(employeeId).orElseThrow(()->new ResourceNotFoundException("Employee not found! ID: ", employeeId));
 
+        var timeBank = employeePersisted.getTimeBank();
+        timeBank.setTotalValue(timeBank.getTotalValue() + minutes);
+        timeBank.setLastUpdate(Instant.now());
+
+        employeeRepository.save(employeePersisted);
         var timeBankDTO = mapper.toDTO(timeBank);
         addHateoasLinks(timeBankDTO);
         return timeBankDTO;
     }
 
+   public TimeBankDTO removeHours(Long employeeId, Integer minutes){
+        logger.info("Removing {} minutes to employeeId id: {}", minutes, employeeId);
+        var persistedEmployee = employeeRepository.findById(employeeId).orElseThrow(()->new ResourceNotFoundException("Employee not found! ID: ", employeeId));
+
+        var timeBank = persistedEmployee.getTimeBank();
+        timeBank.setTotalValue(timeBank.getTotalValue() - minutes);
+        timeBank.setLastUpdate(Instant.now());
+        logger.info("Removing {} minutes to employeeId id: {}", minutes, employeeId);
+
+       employeeRepository.save(persistedEmployee);
+       var timeBankDTO = mapper.toDTO(timeBank);
+       addHateoasLinks(timeBankDTO);
+       return timeBankDTO;
+   }
+
     public TimeBankDTO create(TimeBankDTO timeBank) {
-        logger.info(" Trying to create an timeBank !  ");
-        if (timeBank.getId() != null) {
-            throw new DataIntegrityException("TimeBank ID must be null to create a new timeBank");
-        }
-        var persistedTimeBank= repository.save(mapper.toEntity(timeBank));
+        logger.info(" Creating timeBank !  ");
+
+        timeBank.setTotalValue(0.0);
+        var persistedTimeBank= TimeBankRepository.save(mapper.toEntity(timeBank));
         logger.info("TimeBank created! ID: {}", persistedTimeBank.getId());
 
         var timeBankDTO = mapper.toDTO(persistedTimeBank);
@@ -80,42 +78,10 @@ public class TimeBankService {
         return timeBankDTO;
     }
 
-    public TimeBankDTO update(TimeBankDTO newTimeBank, Long id) {
-        logger.info("Updating timeBank! ID: {}", id);
-
-        TimeBank oldTimeBank = repository.findById(id).orElseThrow(()->new ResourceNotFoundException("TimeBank not found! ID: ", id));
-        updateFactory(newTimeBank, oldTimeBank);
-        repository.save(oldTimeBank);
-        logger.info("TimeBank updated! ID: {}", id);
-
-        var timeBankDTO = mapper.toDTO(oldTimeBank);
-        addHateoasLinks(timeBankDTO);
-        return timeBankDTO;
-    }
-
-    private void updateFactory(TimeBankDTO newTimeBank, TimeBank oldTimeBank){
-        oldTimeBank.setTotalValue(newTimeBank.getTotalValue());
-        oldTimeBank.setLastUpdate(newTimeBank.getLastUpdate());
-    }
-
-    public void deleteById(Long id) {
-        logger.info(" Trying to delete timeBank! ID: {}", id);
-        try {
-            repository.findById(id).orElseThrow(()->new ResourceNotFoundException("TimeBank not found! ID: ", id));
-            repository.deleteById(id);
-            logger.info("TimeBank deleted! ID: {}", id);
-        }
-        catch (DataIntegrityViolationException e) {
-            throw new DataIntegrityException(e.getMessage());
-        }
-    }
-
     private void addHateoasLinks(TimeBankDTO dto) {
-        dto.add(linkTo(methodOn(TimeBankController.class).findAll(1, 12, "asc")).withRel("findAll").withType("GET"));
-        dto.add(linkTo(methodOn(TimeBankController.class).findById(dto.getId())).withSelfRel().withType("GET"));
-        dto.add(linkTo(methodOn(TimeBankController.class).create(dto)).withRel("create").withType("POST"));
-        dto.add(linkTo(methodOn(TimeBankController.class).update(dto.getId(),dto)).withRel("update").withType("PUT"));
-        dto.add(linkTo(methodOn(TimeBankController.class).deleteById(dto.getId())).withRel("delete").withType("DELETE"));
+        dto.add(linkTo(methodOn(TimeBankController.class).addHours(dto.getEmployeeId(),null)).withRel("addHours").withType("POST"));
+        dto.add(linkTo(methodOn(TimeBankController.class).removeHours(dto.getEmployeeId(),null)).withRel("removeHours").withType("POST"));
+        dto.add(linkTo(methodOn(TimeBankController.class).getBalance(dto.getEmployeeId())).withRel("getBalance").withType("GET"));
     }
 }
 

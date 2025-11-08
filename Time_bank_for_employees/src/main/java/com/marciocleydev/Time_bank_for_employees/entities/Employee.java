@@ -24,10 +24,10 @@ public class Employee implements Serializable {
     @Column(unique = true, nullable = false)
     private String pis;
 
-    @OneToOne(mappedBy = "employee", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToOne(mappedBy = "employee", cascade = CascadeType.MERGE, orphanRemoval = true)
     private TimeBank timeBank;
     @JsonIgnore
-    @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "employee", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<TimeSheet> timeSheetList = new ArrayList<>();
 
     public Employee() {
