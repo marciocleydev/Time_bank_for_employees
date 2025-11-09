@@ -8,14 +8,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/employees/{employeeId}/timebank")
+@RequestMapping("/employees/{employeeId}/timeBank")
 public class TimeBankController implements TimeBankControllerDocs {
 
     @Autowired
     private TimeBankService service;
 
 
-    @GetMapping
+    @GetMapping( "/balance")
     public ResponseEntity<TimeBankDTO> getBalance(@PathVariable Long employeeId){
         return ResponseEntity.ok().body(service.getBalance(employeeId));
     }

@@ -11,14 +11,14 @@ public class TimeBankDTO extends RepresentationModel<TimeBankDTO> implements Ser
     private static final long serialVersionUID = 1L;
 
         private Long id;
-        private Double totalValue;
+        private Integer totalValue;
         private Instant lastUpdate;
         private Long employeeId;
 
         public TimeBankDTO() {
         }
 
-        public TimeBankDTO( Long id, Double totalValue, Instant lastUpdate, Long employeeId) {
+        public TimeBankDTO( Long id, Integer totalValue, Instant lastUpdate, Long employeeId) {
             this.id = id;
             this.employeeId = employeeId;
             this.lastUpdate = lastUpdate;
@@ -49,11 +49,11 @@ public class TimeBankDTO extends RepresentationModel<TimeBankDTO> implements Ser
         this.lastUpdate = lastUpdate;
     }
 
-    public Double getTotalValue() {
+    public Integer getTotalValue() {
         return totalValue;
     }
 
-    public void setTotalValue(Double totalValue) {
+    public void setTotalValue(Integer totalValue) {
         this.totalValue = totalValue;
     }
 

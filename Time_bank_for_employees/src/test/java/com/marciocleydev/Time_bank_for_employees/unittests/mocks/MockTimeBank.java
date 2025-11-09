@@ -22,7 +22,7 @@ public class MockTimeBank {
     public TimeBankDTO mockDTO(Integer number){
         TimeBankDTO timeBankDTO = new TimeBankDTO();
         timeBankDTO.setId(number.longValue());
-        timeBankDTO.setTotalValue(number.doubleValue() * 100.0);
+        timeBankDTO.setTotalValue(number * 100);
         timeBankDTO.setLastUpdate(Instant.now());
         timeBankDTO.setEmployeeId(2L);
         return timeBankDTO;

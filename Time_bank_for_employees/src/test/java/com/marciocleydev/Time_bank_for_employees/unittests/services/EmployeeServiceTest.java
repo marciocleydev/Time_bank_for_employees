@@ -32,7 +32,7 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class EmployeeServiceTest {
-    MockEmployee input;
+    MockEmployee employeeInput;
     MockTimeBank timeBankInput;
 
     @InjectMocks
@@ -48,14 +48,14 @@ class EmployeeServiceTest {
 
     @BeforeEach
     void setUp() {
-        input = new MockEmployee();
+        employeeInput = new MockEmployee();
         timeBankInput = new MockTimeBank();
     }
 
     @Test
     void findById() {
-        Employee employee = input.mockEntity(1);
-        EmployeeDTO employeeDTO = input.mockDTO(1);
+        Employee employee = employeeInput.mockEntity(1);
+        EmployeeDTO employeeDTO = employeeInput.mockDTO(1);
 
         when(repository.findById(1L)).thenReturn(Optional.of(employee));
         when(mapper.toDTO(employee)).thenReturn(employeeDTO);
@@ -83,11 +83,11 @@ class EmployeeServiceTest {
     @Test
     void create() {
         TimeBankDTO timeBankDTO = timeBankInput.mockDTO(1);
-        Employee employee = input.mockEntity(1);
+        Employee employee = employeeInput.mockEntity(1);
         employee.setId(null);
 
-        EmployeeDTO persistedEmployeeDTO = input.mockDTO(1);
-        EmployeeDTO employeeDTO = input.mockDTO(1);
+        EmployeeDTO persistedEmployeeDTO = employeeInput.mockDTO(1);
+        EmployeeDTO employeeDTO = employeeInput.mockDTO(1);
         employeeDTO.setId(null);
 
         when(timeBankService.create(new TimeBankDTO())).thenReturn(timeBankDTO);
@@ -109,8 +109,8 @@ class EmployeeServiceTest {
 
     @Test
     void update() {
-        Employee employee = input.mockEntity(1);
-        EmployeeDTO employeeDTO = input.mockDTO(1);
+        Employee employee = employeeInput.mockEntity(1);
+        EmployeeDTO employeeDTO = employeeInput.mockDTO(1);
 
         when(repository.findById(employeeDTO.getId())).thenReturn(Optional.of(employee));
         when(repository.save(employee)).thenReturn(employee);
@@ -130,7 +130,7 @@ class EmployeeServiceTest {
 
     @Test
     void update_notFound() {
-        EmployeeDTO dto = input.mockDTO(999);
+        EmployeeDTO dto = employeeInput.mockDTO(999);
         when(repository.findById(dto.getId())).thenReturn(Optional.empty());
         assertThrows(ResourceNotFoundException.class, () -> service.update(dto, dto.getId()));
 
@@ -140,7 +140,7 @@ class EmployeeServiceTest {
 
     @Test
     void deleteById_success() {
-        Employee employee = input.mockEntity(1);
+        Employee employee = employeeInput.mockEntity(1);
 
         when(repository.findById(employee.getId())).thenReturn(Optional.of(employee));
         service.deleteById(employee.getId());
@@ -161,7 +161,7 @@ class EmployeeServiceTest {
 
     @Test
     void deleteById_dataIntegrity() {
-        Employee employee = input.mockEntity(2);
+        Employee employee = employeeInput.mockEntity(2);
 
         when(repository.findById(employee.getId())).thenReturn(Optional.of(employee));
         doThrow(new DataIntegrityViolationException("FK violation")).when(repository).deleteById(employee.getId());
@@ -177,7 +177,7 @@ class EmployeeServiceTest {
     void findAll() {
         Pageable pageable = PageRequest.of(1, 20, Sort.by("name"));
 
-        List<Employee> employeeList = input.mockEntityList();
+        List<Employee> employeeList = employeeInput.mockEntityList();
         Page<Employee> employeePage = new PageImpl<>(employeeList, pageable, employeeList.size());
 
         when(repository.findAll(pageable)).thenReturn(employeePage);

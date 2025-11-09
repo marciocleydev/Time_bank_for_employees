@@ -13,14 +13,14 @@ public class TimeBankDTO implements Serializable {
     private static final long serialVersionUID = 1L;
 
         private Long id;
-        private Double totalValue;
+        private Integer totalValue;
         private Instant lastUpdate;
         private Employee employee;
 
         public TimeBankDTO() {
         }
 
-        public TimeBankDTO(Long id, Double totalValue, Instant lastUpdate, Employee employee) {
+        public TimeBankDTO(Long id, Integer totalValue, Instant lastUpdate, Employee employee) {
             this.employee = employee;
             this.id = id;
             this.lastUpdate = lastUpdate;
@@ -51,11 +51,11 @@ public class TimeBankDTO implements Serializable {
         this.lastUpdate = lastUpdate;
     }
 
-    public Double getTotalValue() {
+    public Integer getTotalValue() {
         return totalValue;
     }
 
-    public void setTotalValue(Double totalValue) {
+    public void setTotalValue(Integer totalValue) {
         this.totalValue = totalValue;
     }
 

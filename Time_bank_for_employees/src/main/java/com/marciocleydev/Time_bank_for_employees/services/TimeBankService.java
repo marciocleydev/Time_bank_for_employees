@@ -22,15 +22,15 @@ public class TimeBankService {
     @Autowired
     EmployeeRepository employeeRepository;
     @Autowired
-    private TimeBankRepository TimeBankRepository;
+    private TimeBankRepository timeBankRepository;
     @Autowired
     private TimeBankMapper mapper;
 
-    private static final Logger logger = LoggerFactory.getLogger(TimeBankService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(TimeBankService.class);
 
 
     public TimeBankDTO getBalance(Long employeeId){
-        logger.info("Getting balance for employee id: {}", employeeId);
+        LOGGER.info("Getting balance for employee id: {}", employeeId);
         var employee = employeeRepository.findById(employeeId).orElseThrow(()->new ResourceNotFoundException("Employee not found! ID: ", employeeId));
         var timeBankDTO = mapper.toDTO(employee.getTimeBank());
         addHateoasLinks(timeBankDTO);
@@ -38,27 +38,24 @@ public class TimeBankService {
     }
 
     public TimeBankDTO addHours(Long employeeId, Integer minutes){
-        logger.info("Adding {} minutes to employeeId id: {}", minutes, employeeId);
-        var employeePersisted = employeeRepository.findById(employeeId).orElseThrow(()->new ResourceNotFoundException("Employee not found! ID: ", employeeId));
-
-        var timeBank = employeePersisted.getTimeBank();
-        timeBank.setTotalValue(timeBank.getTotalValue() + minutes);
-        timeBank.setLastUpdate(Instant.now());
-
-        employeeRepository.save(employeePersisted);
-        var timeBankDTO = mapper.toDTO(timeBank);
-        addHateoasLinks(timeBankDTO);
-        return timeBankDTO;
+        LOGGER.info("Adding {} minutes to employee id: {}", minutes, employeeId);
+        return updateTimeBank(employeeId, minutes, 1);
     }
 
    public TimeBankDTO removeHours(Long employeeId, Integer minutes){
-        logger.info("Removing {} minutes to employeeId id: {}", minutes, employeeId);
-        var persistedEmployee = employeeRepository.findById(employeeId).orElseThrow(()->new ResourceNotFoundException("Employee not found! ID: ", employeeId));
+        LOGGER.info("Removing {} minutes to employee id: {}", minutes, employeeId);
+       return updateTimeBank(employeeId, minutes, -1);
+   }
+   private TimeBankDTO updateTimeBank(Long employeeId, Integer minutes, Integer operation){
+       var persistedEmployee = employeeRepository.findById(employeeId).orElseThrow(()->new ResourceNotFoundException("Employee not found! ID: ", employeeId));
+       var timeBank = persistedEmployee.getTimeBank();
 
-        var timeBank = persistedEmployee.getTimeBank();
-        timeBank.setTotalValue(timeBank.getTotalValue() - minutes);
-        timeBank.setLastUpdate(Instant.now());
-        logger.info("Removing {} minutes to employeeId id: {}", minutes, employeeId);
+       if(operation == -1){
+           timeBank.setTotalValue(timeBank.getTotalValue() - minutes);
+       }else {
+           timeBank.setTotalValue(timeBank.getTotalValue() + minutes);
+       }
+       timeBank.setLastUpdate(Instant.now());
 
        employeeRepository.save(persistedEmployee);
        var timeBankDTO = mapper.toDTO(timeBank);
@@ -66,16 +63,20 @@ public class TimeBankService {
        return timeBankDTO;
    }
 
-    public TimeBankDTO create(TimeBankDTO timeBank) {
-        logger.info(" Creating timeBank !  ");
+    public TimeBankDTO create(TimeBankDTO timeBankDTO) {
+        LOGGER.info(" Creating timeBankDTO !  ");
 
-        timeBank.setTotalValue(0.0);
-        var persistedTimeBank= TimeBankRepository.save(mapper.toEntity(timeBank));
-        logger.info("TimeBank created! ID: {}", persistedTimeBank.getId());
+        var entity = mapper.toEntity(timeBankDTO);
+        entity.setTotalValue(0);
+        entity.setLastUpdate(Instant.now());
 
-        var timeBankDTO = mapper.toDTO(persistedTimeBank);
-        addHateoasLinks(timeBankDTO);
-        return timeBankDTO;
+        var persisted = timeBankRepository.save(entity);
+
+        LOGGER.info("TimeBank created! ID: {}", persisted.getId());
+
+        var dto = mapper.toDTO(persisted);
+        addHateoasLinks(dto);
+        return dto;
     }
 
     private void addHateoasLinks(TimeBankDTO dto) {
