@@ -20,7 +20,7 @@ public class TimeBankController implements TimeBankControllerDocs {
         return ResponseEntity.ok().body(service.getBalance(employeeId));
     }
 
-    @PostMapping("/add")
+    @PostMapping("/add")                                                              //@RequestParam vem via query param ?minutes=10
     public ResponseEntity<TimeBankDTO> addHours(@PathVariable Long employeeId, @RequestParam Integer minutes){
         return ResponseEntity.ok().body(service.addHours(employeeId, minutes));
     }

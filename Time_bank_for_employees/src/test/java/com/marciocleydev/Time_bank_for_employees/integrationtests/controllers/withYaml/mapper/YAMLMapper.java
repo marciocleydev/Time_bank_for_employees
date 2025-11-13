@@ -2,8 +2,10 @@ package com.marciocleydev.Time_bank_for_employees.integrationtests.controllers.w
 
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.restassured.mapper.ObjectMapper;
 import io.restassured.mapper.ObjectMapperDeserializationContext;
 import io.restassured.mapper.ObjectMapperSerializationContext;
@@ -16,6 +18,8 @@ public class YAMLMapper implements ObjectMapper {
     public YAMLMapper() {
         mapper = new com.fasterxml.jackson.databind.ObjectMapper(new YAMLFactory());
         mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        mapper.registerModule(new JavaTimeModule());
         typeFactory = TypeFactory.defaultInstance();
     }
 

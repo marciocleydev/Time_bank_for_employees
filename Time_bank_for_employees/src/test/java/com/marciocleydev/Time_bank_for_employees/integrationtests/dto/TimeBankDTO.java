@@ -12,27 +12,27 @@ public class TimeBankDTO implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
 
-        private Long id;
-        private Integer totalValue;
-        private Instant lastUpdate;
-        private Employee employee;
+    private Long id;
+    private Integer totalValue;
+    private Instant lastUpdate;
+    private Long employeeId;
 
-        public TimeBankDTO() {
-        }
-
-        public TimeBankDTO(Long id, Integer totalValue, Instant lastUpdate, Employee employee) {
-            this.employee = employee;
-            this.id = id;
-            this.lastUpdate = lastUpdate;
-            this.totalValue = totalValue;
-        }
-
-    public Employee getEmployee() {
-        return employee;
+    public TimeBankDTO() {
     }
 
-    public void setEmployee(Employee employee) {
-        this.employee = employee;
+    public TimeBankDTO( Long id, Integer totalValue, Instant lastUpdate, Long employeeId) {
+        this.id = id;
+        this.employeeId = employeeId;
+        this.lastUpdate = lastUpdate;
+        this.totalValue = totalValue;
+    }
+
+    public Long getEmployeeId() {
+        return employeeId;
+    }
+
+    public void setEmployeeId(Long employeeId) {
+        this.employeeId = employeeId;
     }
 
     public Long getId() {
@@ -63,11 +63,11 @@ public class TimeBankDTO implements Serializable {
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         TimeBankDTO that = (TimeBankDTO) o;
-        return Objects.equals(id, that.id) && Objects.equals(totalValue, that.totalValue) && Objects.equals(lastUpdate, that.lastUpdate) && Objects.equals(employee, that.employee);
+        return Objects.equals(id, that.id) && Objects.equals(totalValue, that.totalValue) && Objects.equals(lastUpdate, that.lastUpdate) && Objects.equals(employeeId, that.employeeId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, totalValue, lastUpdate, employee);
+        return Objects.hash(id, totalValue, lastUpdate, employeeId);
     }
 }
