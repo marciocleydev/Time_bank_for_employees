@@ -26,13 +26,6 @@ public class TimeBank implements Serializable {
     public TimeBank() {
     }
 
-    public TimeBank( Long id, Integer totalValue, Instant lastUpdate, Employee employee) {
-        this.employee = employee;
-        this.id = id;
-        this.lastUpdate = lastUpdate;
-        this.totalValue = totalValue;
-    }
-
     public Employee getEmployee() {
         return employee;
     }
@@ -69,11 +62,11 @@ public class TimeBank implements Serializable {
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         TimeBank timeBank = (TimeBank) o;
-        return Objects.equals(id, timeBank.id) && Objects.equals(totalValue, timeBank.totalValue) && Objects.equals(lastUpdate, timeBank.lastUpdate) && Objects.equals(employee, timeBank.employee);
+        return Objects.equals(id, timeBank.id);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, totalValue, lastUpdate, employee);
+        return Objects.hashCode(id);
     }
 }

@@ -1,11 +1,9 @@
 package com.marciocleydev.Time_bank_for_employees.entities;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.io.Serial;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -26,15 +24,8 @@ public class Employee implements Serializable {
 
     @OneToOne(mappedBy = "employee", cascade = CascadeType.MERGE, orphanRemoval = true)
     private TimeBank timeBank;
-    @JsonIgnore
-    @OneToMany(mappedBy = "employee", cascade = CascadeType.REMOVE, orphanRemoval = true)
-    private List<TimeSheet> timeSheetList = new ArrayList<>();
 
     public Employee() {
-    }
-    public Employee(String name, String pis) {
-        this.name = name;
-        this.pis = pis;
     }
 
     public Long getId() {
@@ -68,28 +59,16 @@ public class Employee implements Serializable {
     public void setTimeBank(TimeBank timeBank) {
         this.timeBank = timeBank;
     }
-    public List<TimeSheet> getTimeSheetList() {
-        return timeSheetList;
-    }
-    public void setTimeSheetList(List<TimeSheet> timeSheetList) {
-        this.timeSheetList = timeSheetList;
-    }
-    public void addTimeSheet(TimeSheet timeSheet) {
-        this.timeSheetList.add(timeSheet);
-    }
-    public void removeTimeSheet(TimeSheet timeSheet) {
-        this.timeSheetList.remove(timeSheet);
-    }
 
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         Employee employee = (Employee) o;
-        return Objects.equals(id, employee.id) && Objects.equals(name, employee.name) && Objects.equals(pis, employee.pis) && Objects.equals(timeBank, employee.timeBank);
+        return Objects.equals(id, employee.id);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, pis, timeBank);
+        return Objects.hashCode(id);
     }
 }

@@ -5,6 +5,9 @@ import jakarta.persistence.*;
 import java.io.Serial;
 import java.io.Serializable;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Objects;
 
 @Entity
@@ -15,10 +18,18 @@ public class TimeSheet implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    private Instant dateTime;
-    private Double overTime;
-    private String imageStorage;
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
+    @Column(name = "date")
+    private LocalDate date;
+    @Column(name = "expected_work_time")
+    private LocalTime expectedWorkTime;
+    @Column(name = "actual_sheet_time")
+    private LocalTime actualSheetTime;
+    @Column(name = "difference_in_minutes")
+    private Integer differenceInMinutes;
+    @Column(name = "photo_url")
+    private String photoUrl;
     @ManyToOne
     @JoinColumn(name = "employee_id")
     private Employee employee;
@@ -26,20 +37,37 @@ public class TimeSheet implements Serializable {
     public TimeSheet() {
     }
 
-    public TimeSheet(Instant dateTime, Employee employee, Long id, String imageStorage, Double overTime) {
-        this.dateTime = dateTime;
-        this.employee = employee;
-        this.id = id;
-        this.imageStorage = imageStorage;
-        this.overTime = overTime;
+    @PrePersist
+    public void prePersist() {
+        this.createdAt = LocalDateTime.now();
     }
 
-    public Instant getDateTime() {
-        return dateTime;
+    public LocalTime getActualSheetTime() {
+        return actualSheetTime;
     }
 
-    public void setDateTime(Instant dateTime) {
-        this.dateTime = dateTime;
+    public void setActualSheetTime(LocalTime actualSheetTime) {
+        this.actualSheetTime = actualSheetTime;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public LocalDate getDate() {
+        return date;
+    }
+
+    public void setDate(LocalDate date) {
+        this.date = date;
+    }
+
+    public Integer getDifferenceInMinutes() {
+        return differenceInMinutes;
+    }
+
+    public void setDifferenceInMinutes(Integer differenceInMinutes) {
+        this.differenceInMinutes = differenceInMinutes;
     }
 
     public Employee getEmployee() {
@@ -50,6 +78,14 @@ public class TimeSheet implements Serializable {
         this.employee = employee;
     }
 
+    public LocalTime getExpectedWorkTime() {
+        return expectedWorkTime;
+    }
+
+    public void setExpectedWorkTime(LocalTime expectedWorkTime) {
+        this.expectedWorkTime = expectedWorkTime;
+    }
+
     public Long getId() {
         return id;
     }
@@ -58,31 +94,23 @@ public class TimeSheet implements Serializable {
         this.id = id;
     }
 
-    public String getImageStorage() {
-        return imageStorage;
+    public String getPhotoUrl() {
+        return photoUrl;
     }
 
-    public void setImageStorage(String imageStorage) {
-        this.imageStorage = imageStorage;
-    }
-
-    public Double getOverTime() {
-        return overTime;
-    }
-
-    public void setOverTime(Double overTime) {
-        this.overTime = overTime;
+    public void setPhotoUrl(String photoUrl) {
+        this.photoUrl = photoUrl;
     }
 
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         TimeSheet timeSheet = (TimeSheet) o;
-        return Objects.equals(id, timeSheet.id) && Objects.equals(dateTime, timeSheet.dateTime) && Objects.equals(overTime, timeSheet.overTime) && Objects.equals(imageStorage, timeSheet.imageStorage) && Objects.equals(employee, timeSheet.employee);
+        return Objects.equals(id, timeSheet.id);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, dateTime, overTime, imageStorage, employee);
+        return Objects.hashCode(id);
     }
 }
