@@ -5,7 +5,9 @@ import org.springframework.hateoas.RepresentationModel;
 
 import java.io.Serial;
 import java.io.Serializable;
-import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Objects;
 
 public class TimeSheetDTO extends RepresentationModel<EmployeeDTO> implements Serializable {
@@ -13,36 +15,59 @@ public class TimeSheetDTO extends RepresentationModel<EmployeeDTO> implements Se
     private static final long serialVersionUID = 1L;
 
     private Long id;
-    private Instant dateTime;
-    private Double overTime;
-    private String imageStorage;
-    private Employee employee;
+    private LocalDateTime createdAt;
+    private LocalDate date;
+    private LocalTime expectedWorkTime;
+    private LocalTime actualSheetTime;
+    private Integer differenceInMinutes;
+    private String photoUrl;
+    private Long employeeId;
 
     public TimeSheetDTO() {
     }
 
-    public TimeSheetDTO(Instant dateTime, Employee employee, Long id, String imageStorage, Double overTime) {
-        this.dateTime = dateTime;
-        this.employee = employee;
-        this.id = id;
-        this.imageStorage = imageStorage;
-        this.overTime = overTime;
+    public LocalTime getActualSheetTime() {
+        return actualSheetTime;
     }
 
-    public Instant getDateTime() {
-        return dateTime;
+    public void setActualSheetTime(LocalTime actualSheetTime) {
+        this.actualSheetTime = actualSheetTime;
     }
 
-    public void setDateTime(Instant dateTime) {
-        this.dateTime = dateTime;
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
     }
 
-    public Employee getEmployee() {
-        return employee;
+    public LocalDate getDate() {
+        return date;
     }
 
-    public void setEmployee(Employee employee) {
-        this.employee = employee;
+    public void setDate(LocalDate date) {
+        this.date = date;
+    }
+
+    public Integer getDifferenceInMinutes() {
+        return differenceInMinutes;
+    }
+
+    public void setDifferenceInMinutes(Integer differenceInMinutes) {
+        this.differenceInMinutes = differenceInMinutes;
+    }
+
+    public Long getEmployeeId() {
+        return employeeId;
+    }
+
+    public void setEmployeeId(Long employeeId) {
+        this.employeeId = employeeId;
+    }
+
+    public LocalTime getExpectedWorkTime() {
+        return expectedWorkTime;
+    }
+
+    public void setExpectedWorkTime(LocalTime expectedWorkTime) {
+        this.expectedWorkTime = expectedWorkTime;
     }
 
     public Long getId() {
@@ -53,20 +78,12 @@ public class TimeSheetDTO extends RepresentationModel<EmployeeDTO> implements Se
         this.id = id;
     }
 
-    public String getImageStorage() {
-        return imageStorage;
+    public String getPhotoUrl() {
+        return photoUrl;
     }
 
-    public void setImageStorage(String imageStorage) {
-        this.imageStorage = imageStorage;
-    }
-
-    public Double getOverTime() {
-        return overTime;
-    }
-
-    public void setOverTime(Double overTime) {
-        this.overTime = overTime;
+    public void setPhotoUrl(String photoUrl) {
+        this.photoUrl = photoUrl;
     }
 
     @Override
@@ -74,11 +91,11 @@ public class TimeSheetDTO extends RepresentationModel<EmployeeDTO> implements Se
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
         TimeSheetDTO that = (TimeSheetDTO) o;
-        return Objects.equals(id, that.id) && Objects.equals(dateTime, that.dateTime) && Objects.equals(overTime, that.overTime) && Objects.equals(imageStorage, that.imageStorage) && Objects.equals(employee, that.employee);
+        return Objects.equals(id, that.id);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), id, dateTime, overTime, imageStorage, employee);
+        return Objects.hash(super.hashCode(), id);
     }
 }

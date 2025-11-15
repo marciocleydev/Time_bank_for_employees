@@ -8,6 +8,10 @@ security:
       issuer: time-bank-api
       secret-key: ${JWT_SECRET} #ideve complexo 32+ caracteres e guardado em local seguro
       expire-length: 3600000  # 1 Hr
+
+file:
+  upload-dir: /intellij/API_file_dir/upload
+
 spring:
   application:
     name: time_bank_for_employees
@@ -26,6 +30,13 @@ spring:
         dialect: org.hibernate.dialect.MySQL8Dialect
     show-sql: false
     open-in-view: false
+
+  servlet:
+    multipart:
+      enabled: true
+      file-size-threshold: 2KB
+      max-file-size: 200MB
+      max-request-size: 215MB
 
 logging:
    level:

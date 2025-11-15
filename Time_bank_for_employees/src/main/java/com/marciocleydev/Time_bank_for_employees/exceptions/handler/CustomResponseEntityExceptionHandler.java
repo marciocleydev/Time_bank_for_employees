@@ -55,4 +55,20 @@ public class CustomResponseEntityExceptionHandler extends ResponseEntityExceptio
         StandardError standardError = new StandardError(Instant.now(),status.value(),error,e.getMessage(),request.getRequestURI());
         return ResponseEntity.status(status).body(standardError);
     }
+
+    @ExceptionHandler(FileStorageException.class)
+    public ResponseEntity<StandardError> handleFileStorageException(FileStorageException e, HttpServletRequest request){
+        String error = "File storage error";
+        HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
+        StandardError standardError = new StandardError(Instant.now(),status.value(),error,e.getMessage(),request.getRequestURI());
+        return ResponseEntity.status(status).body(standardError);
+    }
+
+    @ExceptionHandler(StoredFileNotFoundException.class)
+    public ResponseEntity<StandardError> handleStoredFileNotFoundException(StoredFileNotFoundException e, HttpServletRequest request){
+        String error = "File not found";
+        HttpStatus status = HttpStatus.NOT_FOUND;
+        StandardError standardError = new StandardError(Instant.now(),status.value(),error,e.getMessage(),request.getRequestURI());
+        return ResponseEntity.status(status).body(standardError);
+    }
 }
