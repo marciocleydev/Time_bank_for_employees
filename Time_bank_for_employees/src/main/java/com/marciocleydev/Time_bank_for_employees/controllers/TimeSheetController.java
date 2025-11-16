@@ -4,6 +4,7 @@ import com.marciocleydev.Time_bank_for_employees.DTO.TimeSheetDTO;
 import com.marciocleydev.Time_bank_for_employees.services.TimeSheetService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/employees/{employeeId}/timeSheet")
@@ -15,7 +16,7 @@ public class TimeSheetController {
     }
 
     @PostMapping("/add")
-    public ResponseEntity<TimeSheetDTO> add(@PathVariable Long employeeId, @RequestBody TimeSheetDTO timeSheetDTO) {
+    public ResponseEntity<TimeSheetDTO> addTimeSheet(@PathVariable Long employeeId, @RequestParam MultipartFile file) {
         var persistedTimeSheetDTO = service.create(timeSheetDTO, employeeId);
         return ResponseEntity.ok().body(persistedTimeSheetDTO);
     }

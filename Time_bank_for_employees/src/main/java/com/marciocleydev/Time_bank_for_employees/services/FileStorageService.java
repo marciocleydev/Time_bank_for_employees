@@ -57,6 +57,11 @@ public class FileStorageService {
         if (lower.endsWith(".exe") || lower.endsWith(".bat") || lower.endsWith(".sh")) {
             throw new FileStorageException("Executable files are not allowed.");
         }
+        //2.5 verificação do tipo MIME
+        String contentType = file.getContentType();
+        if (contentType == null || !contentType.startsWith("image/")) {
+            throw new FileStorageException("Only image files are allowed.");
+        }
         // 3. Gerar nome único para evitar sobrescrita
         String uniqueName = UUID.randomUUID() + "_" + fileName;
 

@@ -1,29 +1,43 @@
 package com.marciocleydev.Time_bank_for_employees.DTO;
 
-import com.marciocleydev.Time_bank_for_employees.entities.Employee;
+import com.marciocleydev.Time_bank_for_employees.entities.TimeSheet;
 import org.springframework.hateoas.RepresentationModel;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Objects;
 
-public class TimeSheetDTO extends RepresentationModel<EmployeeDTO> implements Serializable {
+public class TimeSheetDTO extends RepresentationModel<TimeSheetDTO> implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
 
     private Long id;
-    private LocalDateTime createdAt;
     private LocalDate date;
     private LocalTime expectedWorkTime;
     private LocalTime actualSheetTime;
     private Integer differenceInMinutes;
-    private String photoUrl;
+    private String photoDownloadUrl;
     private Long employeeId;
 
     public TimeSheetDTO() {
+    }
+
+    public TimeSheetDTO(TimeSheet entity) {
+        this.id = entity.getId();
+        this.date = entity.getDate();
+        this.expectedWorkTime = entity.getExpectedWorkTime();
+        this.actualSheetTime = entity.getActualSheetTime();
+        this.differenceInMinutes = entity.getDifferenceInMinutes();
+        this.employeeId = entity.getEmployee().getId();
+
+        this.photoDownloadUrl =
+                ServletUriComponentsBuilder.fromCurrentContextPath()
+                        .path("/files/downloadFile/")
+                        .path(entity.getPhotoUrl())
+                        .toUriString();
     }
 
     public LocalTime getActualSheetTime() {
@@ -32,10 +46,6 @@ public class TimeSheetDTO extends RepresentationModel<EmployeeDTO> implements Se
 
     public void setActualSheetTime(LocalTime actualSheetTime) {
         this.actualSheetTime = actualSheetTime;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
     }
 
     public LocalDate getDate() {
@@ -78,12 +88,12 @@ public class TimeSheetDTO extends RepresentationModel<EmployeeDTO> implements Se
         this.id = id;
     }
 
-    public String getPhotoUrl() {
-        return photoUrl;
+    public String getPhotoDownloadUrl() {
+        return photoDownloadUrl;
     }
 
-    public void setPhotoUrl(String photoUrl) {
-        this.photoUrl = photoUrl;
+    public void setPhotoDownloadUrl(String photoDownloadUrl) {
+        this.photoDownloadUrl = photoDownloadUrl;
     }
 
     @Override

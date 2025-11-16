@@ -34,7 +34,7 @@ public class FileController implements FileControllerDocs {
 
     @PostMapping("/uploadFile")
     @Override
-    public UploadFileResponseDTO uploadFile(@RequestParam("file") MultipartFile file) {
+    public UploadFileResponseDTO uploadFile(@RequestPart("file") MultipartFile file) {//@RequestPart deixa mais explícito que é multipart.
         var fileName = service.storeFile(file);
 
         var fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
@@ -47,7 +47,7 @@ public class FileController implements FileControllerDocs {
 
     @PostMapping("/uploadMultipleFiles")
     @Override
-    public List<UploadFileResponseDTO> uploadMultipleFile(MultipartFile[] files) {
+    public List<UploadFileResponseDTO> uploadMultipleFile(@RequestPart("files") MultipartFile[] files) {
         return Arrays.stream(files)
                 .map(file -> {
                     var fileName = service.storeFile(file);

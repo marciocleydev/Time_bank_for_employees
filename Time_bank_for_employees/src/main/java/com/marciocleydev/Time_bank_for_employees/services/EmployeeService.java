@@ -40,6 +40,11 @@ public class EmployeeService  {
 
     private static final Logger logger = LoggerFactory.getLogger(EmployeeService.class);
 
+    public Employee findEntityById(Long id) {
+        logger.info("Finding an employee by id {}", id);
+        return repository.findById(id).orElseThrow(()->new ResourceNotFoundException("Employee not found! ID: ", id));
+    }
+
     public PagedModel<EntityModel<EmployeeDTO>> findAll(Pageable pageable) {
         logger.info("Finding all employees");
 
